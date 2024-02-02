@@ -71,15 +71,23 @@
 
                 <td class="text-center">
 
-                    <a class="btn btn-sm btn-outline-danger rounded-0" target="_blank" href="<?= base_url(); ?>service/print_pms?pms=pms&id=<?= $item->id ?>"><?= strtoupper('pms') ?></a>
+                    <div class="btn-group">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-toggle="dropdown">Action</button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" target="_blank" href="<?= base_url(); ?>prints/print_pms?pms=pms&id=<?= $item->id ?>"><?= strtoupper('pms') ?></a>
 
-                    <?php if ($item->pms_status == 'created') : ?>
+                                <?php if ($item->pms_status == 'created') : ?>
 
-                        <a class="btn btn-sm btn-outline-primary rounded-0" id="createService" onclick="create(<?= $item->id ?>,<?= $item->id_calendar ?>)"> Converse Job</a>
+                                    <button class="dropdown-item" id="createService" onclick="create(<?= $item->id ?>,<?= $item->id_calendar ?>)"> Converse Job</button>
+                                    <button class="dropdown-item" id="createService" onclick="del(<?= $item->id ?>,<?= $item->id_calendar ?>)"> Delete PMS</button>
 
-                        <a href="#" class="btn btn-sm btn-outline-success rounded-0">Edit <?= strtoupper($pms) ?></a>
+                                <?php endif; ?>
 
-                    <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
 
                 </td>
 
@@ -137,62 +145,4 @@
         },
 
     });
-
-    function create(id, calendar) {
-
-        $.ajax({
-
-            url: '<?= base_url(); ?>service/create_service?id=' + id + '&id_calendar=' + calendar,
-
-            method: 'POST',
-
-            dataType: 'JSON',
-
-            success: function(res) {
-
-                if (res.status == 'SUCCESS') {
-
-                    Swal.fire({
-
-                        icon: 'success',
-
-                        title: 'สำเร็จ',
-
-                        text: 'สร้างรายการซ่อมสำเร็จ',
-
-                        showConfirmButton: false,
-
-                        timer: 1500
-
-                    });
-
-                    setTimeout(function() {
-
-                        window.location.assign('<?= base_url(); ?>pages/service_edit_detail/' + res.service_invoice);
-
-                    }, 1500);
-
-                } else {
-
-                    Swal.fire({
-
-                        icon: 'error',
-
-                        title: 'ผิดพลาด!',
-
-                        text: res.message,
-
-                        confirmButtonText: 'ตกลง'
-
-                    });
-
-                    return false;
-
-                }
-
-            }
-
-        })
-
-    }
 </script>

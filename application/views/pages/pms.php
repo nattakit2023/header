@@ -91,13 +91,119 @@
 
     }
 
-
-
     $(document).ready(function() {
 
         tblPMS();
 
     });
 
-    
+    function create(id, calendar) {
+
+        $.ajax({
+
+            url: '<?= base_url(); ?>report/create_service_pms?id=' + id + '&id_calendar=' + calendar,
+
+            method: 'POST',
+
+            dataType: 'JSON',
+
+            success: function(res) {
+
+                if (res.status == 'SUCCESS') {
+
+                    Swal.fire({
+
+                        icon: 'success',
+
+                        title: 'สำเร็จ',
+
+                        text: 'สร้างรายการซ่อมสำเร็จ',
+
+                        showConfirmButton: false,
+
+                        timer: 1500
+
+                    });
+
+                    setTimeout(function() {
+
+                        window.location.assign('<?= base_url(); ?>pages/service_edit_detail/' + res.service_invoice);
+
+                    }, 1500);
+
+                } else {
+
+                    Swal.fire({
+
+                        icon: 'error',
+
+                        title: 'ผิดพลาด!',
+
+                        text: res.message,
+
+                        confirmButtonText: 'ตกลง'
+
+                    });
+
+                    return false;
+
+                }
+
+            }
+
+        })
+
+    }
+
+    function del(id, calendar) {
+        $.ajax({
+
+            url: '<?= base_url(); ?>report/del_pms?id=' + id + '&id_calendar=' + calendar,
+
+            method: 'POST',
+
+            dataType: 'JSON',
+
+            success: function(res) {
+
+                if (res.status == 'SUCCESS') {
+
+                    Swal.fire({
+
+                        icon: 'success',
+
+                        title: 'สำเร็จ',
+
+                        text: 'สร้างรายการซ่อมสำเร็จ',
+
+                        showConfirmButton: false,
+
+                        timer: 1500
+
+                    });
+
+                    window.location.reload();
+
+                } else {
+
+                    Swal.fire({
+
+                        icon: 'error',
+
+                        title: 'ผิดพลาด!',
+
+                        text: res.message,
+
+                        confirmButtonText: 'ตกลง'
+
+                    });
+
+                    return false;
+
+                }
+
+            }
+
+        })
+    }
 </script>

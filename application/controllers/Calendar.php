@@ -36,10 +36,7 @@ class Calendar extends CI_Controller
         $where_arr = array(
             'due_date >=' => date($year . '-' . $month . '-1'),
             'end_date <=' => date($year . '-' . $month . '-31'),
-            'ves_maintenance' => 'Preventive Maintenance'
         );
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', '');
         $data['engineer'] = $this->Function_model->fetchDataResult('tbl_engineer', '');
         $data['service'] = $this->Function_model->fetchDataResult('tbl_service', $where_arr, 'due_date', 'ASC');
 
@@ -55,10 +52,8 @@ class Calendar extends CI_Controller
 
         $where_arr = array(
             'due_date >=' => date($year . '-' . $month . '-1'),
-            'end_date <=' => date($year . '-' . $month . '-31')
+            'end_date <=' => date($year . '-' . $month . '-31'),
         );
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', '');
         $data['pms'] = $this->Function_model->fetchDataResult('tbl_pms_job', $where_arr, 'due_date', 'ASC');
 
         return $this->load->view('components/tbl_calendar2', $data);
@@ -74,13 +69,31 @@ class Calendar extends CI_Controller
         $where_arr = array(
             'due_date >=' => date($year . '-' . $month . '-1'),
             'end_date <=' => date($year . '-' . $month . '-31'),
+        );
+
+        $data['cm'] = $this->Function_model->fetchDataResult('tbl_cm_job', $where_arr, 'due_date', 'ASC');
+
+        return $this->load->view('components/tbl_calendar3', $data);
+    }
+
+    function tblCalendar4()
+    {
+
+        $month = $this->input->post('month') + 1;
+
+        $year = $this->input->post('year');
+
+        $where_arr = array(
+            'due_date >=' => date($year . '-' . $month . '-1'),
+            'end_date <=' => date($year . '-' . $month . '-31'),
             'service_invoice' => '',
-            'pms_invoice' => ''
+            'pms_invoice' => '',
+            'cm_invoice' => ''
         );
 
         $data['event'] = $this->Function_model->fetchDataResult('tbl_calendar', $where_arr, 'due_date', 'ASC');
 
-        return $this->load->view('components/tbl_calendar3', $data);
+        return $this->load->view('components/tbl_calendar4', $data);
     }
 
     function createCalendar()
@@ -239,9 +252,38 @@ class Calendar extends CI_Controller
             'color'    => $color
         ];
 
-        $res = $this->Function_model->updateData('tbl_calendar', ['id' => $id], $data);
+        $calendar = $this->Function_model->getDataRow('tbl_calendar', ['id' => $id]);
+
+        if ($calendar->service_invoice != null) {
+
+            $data_service = [
+                'due_date' => $due_date,
+
+                'end_date' => $end_date,
+            ];
+
+            $res = $this->Function_model->updateData('tbl_service', ['service_invoice' => $calendar->service_invoice], $data_service);
+        } else if ($calendar->pms_invoice != null) {
+            $data_service = [
+                'due_date' => $due_date,
+
+                'end_date' => $end_date,
+            ];
+
+            $res = $this->Function_model->updateData('tbl_pms_job', ['pms_invoice' => $calendar->pms_invoice], $data_service);
+        } else if ($calendar->cm_invoice != null) {
+            $data_service = [
+                'due_date' => $due_date,
+
+                'end_date' => $end_date,
+            ];
+
+            $res = $this->Function_model->updateData('tbl_cm_job', ['cm_invoice' => $calendar->cm_invoice], $data_service);
+        }
 
         if ($res == true) {
+
+            $this->Function_model->updateData('tbl_calendar', ['id' => $id], $data);
 
             echo json_encode([
 
@@ -276,7 +318,17 @@ class Calendar extends CI_Controller
 
         $id = $this->input->post('cal_id');
 
-        $res = $this->Function_model->getDataRow('tbl_calendar', ['id' => $id]);
+        $service_invoice = $this->input->post('service_invoice');
+
+        if ($id != '') {
+            $res = $this->Function_model->getDataRow('tbl_calendar', ['id' => $id]);
+        } else if (substr($service_invoice, 0, 3) == 'PMS') {
+            $res = $this->Function_model->getDataRow('tbl_calendar', ['pms_invoice' => $service_invoice]);
+        } else if (substr($service_invoice, 0, 2) == 'CM') {
+            $res = $this->Function_model->getDataRow('tbl_calendar', ['cm_invoice' => $service_invoice]);
+        } else if ($service_invoice != '') {
+            $res = $this->Function_model->getDataRow('tbl_calendar', ['service_invoice' => $service_invoice]);
+        }
 
         if ($res == true) {
 
@@ -301,6 +353,54 @@ class Calendar extends CI_Controller
                     'header' => ' ( ' . $res->due_date . ' - ' . $res->end_date . ' )'
                 ]
             ]);
+        }
+    }
+
+    function detail_invoice()
+    {
+
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            show_404();
+            exit();
+        }
+
+        $invoice = $this->input->post('invoice');
+
+        if (substr($invoice, 0, 3) == 'PMS') {
+            $res = $this->Function_model->getDataRow('tbl_pms_job', ['pms_invoice' => $invoice]);
+        } else if (substr($invoice, 0, 2) == 'CM') {
+            $res = $this->Function_model->getDataRow('tbl_cm_job', ['cm_invoice' => $invoice]);
+        } else {
+            $res = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $invoice]);
+            if ($res == true) {
+                echo json_encode([
+                    'status' => 'SUCCESS',
+                    'message' => '',
+                    'service_invoice' => $res->service_invoice
+                ]);
+                exit();
+            } else {
+                echo json_encode([
+                    'status' => 'ERROR',
+                    'message' => 'Not Found Invoice ' . $res->service_invoice,
+                ]);
+                exit();
+            }
+        }
+        if ($res == true) {
+            echo json_encode([
+                'status' => 'SUCCESS',
+                'message' => '',
+                'service_invoice' => $res->to_invoice
+            ]);
+            exit();
+        } else {
+            echo json_encode([
+                'status' => 'ERROR',
+                'message' => 'Not Found Invoice',
+                'service_invoice' => $res->to_invoice
+            ]);
+            exit();
         }
     }
 }

@@ -28,7 +28,11 @@
 
                 <td class="text-center"><?= ++$i; ?></td>
 
-                <td><?= $item->service_name; ?> <br>
+                <td><?= $item->service_name; ?>
+                    <?php if ($item->serial_number != null) {
+                        echo '(S/N : ' . $item->serial_number . ')';
+                    } ?>
+                    <br>
 
                     <small class="text-muted"><?= $item->detail; ?></small>
 
@@ -41,9 +45,19 @@
 
                 <?php if ($service->service_status == 'created') : ?>
                     <td class="text-center">
-
-                        <button id="delServiceDetail" onclick="delServiceDetail('<?= $item->id; ?>');" class="btn btn-danger btn-sm rounded-0"><i class="fas fa-trash-alt"></i></button>
-
+                        <div class="btn-group">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-dark dropdown-toggle" data-toggle="dropdown">Action</button>
+                                <div class="dropdown-menu">
+                                    <?php if ($item->serial_number == null) : ?>
+                                        <button onclick="add_serial_number('<?= $item->id; ?>');" class="dropdown-item"><i class="fas fa-plus"></i>Add</button>
+                                    <?php else : ?>
+                                        <button onclick="edit_serial_number('<?= $item->id; ?>');" class="dropdown-item"><i class="fas fa-plus"></i>Edit</button>
+                                    <?php endif; ?>
+                                    <button id="delServiceDetail" onclick="delServiceDetail('<?= $item->id; ?>');" class="dropdown-item"><i class="fas fa-trash-alt"></i>Delete</button>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 <?php endif; ?>
             </tr>

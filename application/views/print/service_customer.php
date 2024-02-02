@@ -257,27 +257,27 @@
 
 
     </table>
+    <?php if ($service->remark_add != null) : ?>
+        <table class="tableheaderdetail">
+            <tr>
+                <td>
+                    Remark
+                </td>
+            </tr>
 
-    <table class="tableheaderdetail">
-        <tr>
-            <td>
-                Remark
-            </td>
-        </tr>
+        </table>
 
-    </table>
+        <table class="tabledetail">
+            <tr>
+                <td>
 
-    <table class="tabledetail">
-        <tr>
-            <td>
-                <?php if ($service->remark_add != null) : ?>
                     <?= str_replace("\n", '<br />', $service->remark_add) ?>
-                <?php endif; ?>
-            </td>
-        </tr>
 
-    </table>
+                </td>
+            </tr>
 
+        </table>
+    <?php endif; ?>
     <table class="tableheaderdetail">
         <tr>
             <td>
@@ -292,7 +292,7 @@
             </td>
 
             <td>
-                <strong> : </strong><?= $service->port_name; ?>
+                <strong> : </strong><?= $service->port_name; ?> in <?= $service->port_province ?>
             </td>
         </tr>
         <tr>
@@ -310,7 +310,7 @@
             </td>
 
             <td>
-                <strong> : </strong><?= $service->port_name; ?>
+                <strong> : </strong><?= $service->port_name; ?> in <?= $service->port_province ?>
             </td>
         </tr>
         <tr>
@@ -362,7 +362,9 @@
 
                         <td>
 
-                            <?= $item->service_name; ?><br>
+                            <?= $item->service_name; ?><?php if ($item->serial_number != null) {
+                                                            echo '(' . $item->serial_number . ')';
+                                                        } ?><br>
 
                             <em><small style="color: #333;"><?= $item->detail; ?></small></em>
 
@@ -422,7 +424,9 @@
                         <?= $item->engineer ?>
                         <?php if ($i < count($engineer)) : ?>
                             ,
-                        <?php endif; ?>
+
+                        <?php $i++;
+                        endif; ?>
                     <?php endforeach; ?>
                 </strong>
 

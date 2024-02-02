@@ -14,6 +14,11 @@
 
     <link rel="shortcut icon" type="image/x-icon" href="<?= base_url(); ?>/assets/img/favicon.ico">
 
+    <!-- DropDown Button -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
+
     <!-- Google Font: Source Sans Pro -->
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Kanit">
@@ -22,15 +27,22 @@
 
     <link rel="stylesheet" href="<?= base_url(); ?>/assets/AdminLTE/plugins/fontawesome-free/css/all.min.css">
 
+    <!-- Chart -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!--Select 2 -->
 
     <link href="<?= base_url(); ?>/assets/AdminLTE/plugins/select2/css/select2.min.css" rel="stylesheet" />
 
+    <!--Full Calendar -->
+
+    <link href="<?= base_url(); ?>/assets/AdminLTE/plugins/fullcalendar/main.min.css" rel="stylesheet" />
 
     <!-- Multiple Select-->
 
     <link href="<?= base_url(); ?>/assets/AdminLTE/plugins/select2-bootstrap-5-theme-1.3.0/select2-bootstrap-5-theme.css" rel="stylesheet" />
-    
+
     <!-- DataTables -->
 
     <link rel="stylesheet" href="<?= base_url(); ?>/assets/AdminLTE/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">

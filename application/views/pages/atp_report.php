@@ -730,7 +730,7 @@
 
                         $.ajax({
 
-                            url: '<?= base_url(); ?>/service/create_atp',
+                            url: '<?= base_url(); ?>/prints/create_atp',
 
                             method: 'POST',
 
@@ -762,7 +762,7 @@
 
                                     setTimeout(function() {
 
-                                        window.location.assign('<?= base_url(); ?>service/print_atp?invoice=<?= $service->service_invoice ?>');
+                                        window.location.assign('<?= base_url(); ?>prints/print_atp?invoice=<?= $service->service_invoice ?>');
 
                                     }, 1500);
 

@@ -8,7 +8,7 @@
 
                 <div class="col-sm-6">
 
-                    <h3><strong><?=$title?></strong></h3>
+                    <h3><strong><?= $title ?></strong></h3>
 
                 </div>
 
@@ -18,7 +18,7 @@
 
                         <li class="breadcrumb-item"><a href="<?= base_url(); ?>/pages">หน้าหลัก</a></li>
 
-                        <li class="breadcrumb-item active"><?=$title?></li>
+                        <li class="breadcrumb-item active"><?= $title ?></li>
 
                     </ol>
 
@@ -38,7 +38,7 @@
 
                 <div class="col-md-12 mb-2">
 
-                    <button type="button" onclick="clearForm()" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddPackage"><i class="fas fa-user-plus"></i> Package</button>
+                    <button type="button" onclick="clearForm()" class="btn btn-primary rounded-0" id="addPackage"><i class="fas fa-user-plus"></i> Package</button>
 
                 </div>
 
@@ -88,7 +88,7 @@
 
                 <h5 class="modal-title">กรอกข้อมูล Package</h5>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalAddPackage')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -174,7 +174,7 @@
 
                 <h5 class="modal-title">แก้ไขข้อมูล</h5>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalEditPackage')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -268,11 +268,9 @@
 
     }
 
-    $(document).ready(function() {
-
-        tblPackage();
-
-    });
+    function hide(modal) {
+        $('#' + modal).modal('hide');
+    }
 
     function clearForm() {
 
@@ -282,7 +280,25 @@
 
     }
 
+    $(document).ready(function() {
 
+        tblPackage();
+
+    });
+
+
+
+    // Modal Package Add
+
+    $(document).on('click', '#addPackage', function() {
+        $('#modalAddPackage').modal('show');
+    });
+
+    // Modal Package Add
+
+    $(document).on('click', '#editPackage', function() {
+        $('#modalEditPackage').modal('show');
+    });
 
     // Edit Package
 
@@ -293,7 +309,6 @@
         let pack_name = $('#edit_pack_name').val();
 
         let pack_internet = $('#edit_pack_internet').val();
-
 
 
         if (pack_id == '' || pack_name == '' || pack_internet == '') {

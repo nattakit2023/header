@@ -8,7 +8,7 @@
 
                 <div class="col-sm-6">
 
-                    <h3><strong><?=$title?></strong></h3>
+                    <h3><strong><?= $title ?></strong></h3>
 
                 </div>
 
@@ -18,7 +18,7 @@
 
                         <li class="breadcrumb-item"><a href="<?= base_url(); ?>/pages">หน้าหลัก</a></li>
 
-                        <li class="breadcrumb-item active"><?=$title?></li>
+                        <li class="breadcrumb-item active"><?= $title ?></li>
 
                     </ol>
 
@@ -38,7 +38,8 @@
 
                 <div class="col-md-12 mb-2">
 
-                    <button type="button" onclick="clearForm()" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddUser"><i class="fas fa-user-plus"></i> เพิ่มผู้ใช้งาน</button>
+                    <button type="button" class="btn btn-primary rounded-0" onclick="show('modalAddUser')"><i class="fas fa-user-plus"></i> เพิ่มผู้ใช้งาน</button>
+                    <button type="button" class="btn btn-info rounded-0" onclick="show('modalAddPosition')"><i class="fas fa-plus"></i> เพิ่มตำแหน่ง</button>
 
                 </div>
 
@@ -76,7 +77,55 @@
 
 </div>
 
+<!-- Modal Add Position-->
 
+<div class="modal fade" id="modalAddPosition" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
+
+    <div class="modal-dialog" role="document">
+
+        <div class="modal-content rounded-0">
+
+            <div class="modal-header bg-dark rounded-0" style="padding-bottom: 0px;">
+
+                <p><i class="fas fa-user-plus"></i> เพิ่มหน้าที่</p>
+
+                <button type="button" class="close text-white" onclick="hide('modalAddPosition')">
+
+                    <span aria-hidden="true">&times;</span>
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+
+                    <div class="col-md-12 mb-2">
+
+                        <label>ตำแหน่ง :</label>
+
+                        <input type="text" id="admin_positions" class="form-control rounded-0" placeholder="กรุณากรอกตำแหน่งที่ต้องการ">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" id="btnAddPosition" class="btn btn-primary rounded-0">บันทึก</button>
+
+                <button type="button" class="btn btn-secondary rounded-0" data-dismiss="modal">ยกเลิก</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 <!-- Modal Add User-->
 
@@ -90,7 +139,7 @@
 
                 <p><i class="fas fa-user-plus"></i> เพิ่มผู้ใช้งาน</p>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalAddUser')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -132,7 +181,7 @@
 
                         <label>ชื่อผู้ใช้งาน (Username) :</label>
 
-                        <input type="text" id="admin_username" class="form-control rounded-0" placeholder="กรอกชื่อผู้ใช้งาน ภาษาอังกฤษและตัวเลขเท่านั้น" maxlength="20" oninput="this.value=this.value.replace(/[^A-Za-z0-9\\s]/g,'');">
+                        <input type="text" id="admin_username" class="form-control rounded-0" placeholder="กรอกชื่อผู้ใช้งาน ภาษาอังกฤษและตัวเลขเท่านั้น" maxlength="40">
 
                     </div>
 
@@ -162,8 +211,6 @@
 
 </div>
 
-
-
 <!-- Modal Edit User -->
 
 <div class="modal fade" id="modalEditUser" tabindex="-1" role="dialog" aria-labelledby="modelTitleId" aria-hidden="true">
@@ -176,7 +223,7 @@
 
                 <p><i class="fas fa-user-edit"></i> แก้ไขผู้ใช้งาน</p>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalEditUser')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -218,7 +265,7 @@
 
                         <label>ชื่อผู้ใช้งาน (Username) :</label>
 
-                        <input type="text" id="edit_admin_username" class="form-control rounded-0" placeholder="กรอกชื่อผู้ใช้งาน ภาษาอังกฤษและตัวเลขเท่านั้น" maxlength="20" oninput="this.value=this.value.replace(/[^A-Za-z0-9\\s]/g,'');">
+                        <input type="text" id="edit_admin_username" class="form-control rounded-0" placeholder="กรอกชื่อผู้ใช้งาน ภาษาอังกฤษและตัวเลขเท่านั้น" maxlength="40">
 
                     </div>
 
@@ -230,7 +277,7 @@
 
                 <button type="button" id="btnUpdateUser" class="btn btn-primary rounded-0">บันทึก</button>
 
-                <button type="button" class="btn btn-secondary rounded-0" data-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-secondary rounded-0" onclick="hide('modalEditUser')">ยกเลิก</button>
 
             </div>
 
@@ -271,10 +318,56 @@
 
     }
 
+    function hide(modal) {
+        $('#' + modal).modal('hide');
+    }
+
+    function show(modal) {
+        $('#' + modal).modal('show');
+        clearForm();
+    }
+
     $(document).ready(function() {
 
         tblUser();
 
+    });
+
+    // Add Position
+
+    $(document).on('click', '#btnAddPosition', function() {
+
+        let admin_position = $('#admin_positions').val();
+
+        if (admin_position == '') {
+            Swal.fire({
+
+                icon: 'warning',
+
+                title: 'แจ้งเตือน',
+
+                text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+
+                confirmButtonText: 'ตกลง'
+
+            });
+
+            return false;
+        }
+
+        $.ajax({
+
+            url: '<?= base_url() ?>user/add_position',
+            method: 'POST',
+            dataType: 'JSON',
+            data: {
+                admin_position: admin_position
+            },
+            success: function(res) {
+
+            }
+
+        });
     });
 
     //Add User

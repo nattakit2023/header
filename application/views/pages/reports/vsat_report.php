@@ -845,7 +845,7 @@
 
                                     setTimeout(function() {
 
-                                        window.location.assign('<?= base_url(); ?>service/print_report?pms=<?= $pms ?>&invoice=<?= $service->service_invoice ?>');
+                                        window.location.assign('<?= base_url(); ?>prints/print_report?pms=<?= $pms ?>&invoice=<?= $service->service_invoice ?>');
 
                                     }, 1500);
 

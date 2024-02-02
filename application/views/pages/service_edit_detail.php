@@ -86,7 +86,7 @@ if ($service->ves_installation == true) {
 
                                 <div class="col-md-2">
 
-                                    <select class="form-select" data-placeholder="Project Code" id="projects" multiple="multiple">
+                                    <select class="form-control select2 rouned-0" id="projects">
 
                                         <option value="">Loading...</option>
 
@@ -257,7 +257,7 @@ if ($service->ves_installation == true) {
 
                                     <label><strong class="text-danger">*</strong>Name :</label>
 
-                                    <select class="form-select" id="ves_name" data-placeholder="Vessel Name" multiple="multiple">
+                                    <select class="form-control select2 rouned-0" id="ves_name">
 
                                         <option value="">Loading...</option>
 
@@ -312,7 +312,7 @@ if ($service->ves_installation == true) {
 
                                     <label><strong class="text-danger">*</strong>IMO :</label>
 
-                                    <input type="text" maxlength="6" id="ves_imo" class="form-control rounded-0" placeholder="IMO" value="<?= $service->ves_imo ?>" maxlength="6" oninput="this.value=this.value.replace(/[^0-9\s]/g,'');">
+                                    <input type="text" id="ves_imo" class="form-control rounded-0" placeholder="IMO" value="<?= $service->ves_imo ?>" maxlength="15" oninput="this.value=this.value.replace(/[^0-9\s]/g,'');">
 
                                 </div>
 
@@ -336,9 +336,9 @@ if ($service->ves_installation == true) {
 
                                     <label><strong class="text-danger">*</strong>Maintenance :</label>
 
-                                    <select class="form-control select2 rouned-0" id="ves_maintenance">
+                                    <select class="form-control select2 rouned-0" id="ves_maintenance" onchange="disable_maintenance(value)">
 
-                                        <option value="<?= $service->ves_maintenance ?>" selected><?= $service->ves_maintenance ?></option>
+                                        <option value="<?= $service->ves_maintenance ?>"><?= $service->ves_maintenance ?></option>
 
                                         <?php if ($service->ves_maintenance != "Preventive Maintenance") : ?>
                                             <option value="Preventive Maintenance">Preventive Maintenance</option>
@@ -347,13 +347,6 @@ if ($service->ves_installation == true) {
                                         <?php if ($service->ves_maintenance != "Corrective Maintenance") : ?>
                                             <option value="Corrective Maintenance">Corrective Maintenance</option>
                                         <?php endif; ?>
-
-                                        <?php if ($service->ves_maintenance != "New Installation") : ?>
-                                            <option value="New Installation">New Installation</option>
-                                        <?php endif; ?>
-
-
-
 
                                     </select>
 
@@ -365,12 +358,7 @@ if ($service->ves_installation == true) {
                                             <label><strong class="text-danger">*</strong>Survey :</label>
                                         </div>
                                         <div class="col-md-2">
-                                            <?php if ($service->ves_survey == 'true') : ?>
-                                                <input type="checkbox" id="ves_survey" name="ves_survey" checked>
-                                            <?php endif; ?>
-                                            <?php if ($service->ves_survey == 'false') : ?>
-                                                <input type="checkbox" id="ves_survey" name="ves_survey">
-                                            <?php endif; ?>
+                                            <input type="checkbox" id="ves_survey" name="ves_survey" onclick="disable_maintenance('ves_survey')">
                                         </div>
                                     </div>
 
@@ -379,12 +367,7 @@ if ($service->ves_installation == true) {
                                             <label><strong class="text-danger">*</strong>Installation :</label>
                                         </div>
                                         <div class="col-md-2">
-                                            <?php if ($service->ves_installation == 'true') : ?>
-                                                <input type="checkbox" id="ves_installation" name="ves_installation" checked>
-                                            <?php endif; ?>
-                                            <?php if ($service->ves_installation == 'false') : ?>
-                                                <input type="checkbox" id="ves_installation" name="ves_installation">
-                                            <?php endif; ?>
+                                            <input type="checkbox" id="ves_installation" name="ves_installation" onclick="disable_maintenance('ves_installation')">
                                         </div>
                                     </div>
 
@@ -896,7 +879,7 @@ if ($service->ves_installation == true) {
             method: 'POST',
 
             data: {
-                service_invoice:service_invoice,
+                service_invoice: service_invoice,
                 package: pack_name
             },
 
@@ -958,12 +941,6 @@ if ($service->ves_installation == true) {
             success: function(res) {
 
                 $('#projects').html(res);
-                $('#projects').select2({
-                    theme: "bootstrap-5",
-                    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-                    placeholder: $(this).data('placeholder'),
-                    closeOnSelect: false,
-                });
             }
 
         })
@@ -1006,18 +983,14 @@ if ($service->ves_installation == true) {
             method: 'POST',
 
             data: {
-                service_invoice: service_invoice
+                service_invoice: service_invoice,
+                name: '<?= $service->ves_name ?>'
             },
 
             success: function(res) {
 
                 $('#ves_name').html(res);
-                $('#ves_name').select2({
-                    theme: "bootstrap-5",
-                    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-                    placeholder: $(this).data('placeholder'),
-                    closeOnSelect: false,
-                });
+
             }
 
         })
@@ -1085,6 +1058,7 @@ if ($service->ves_installation == true) {
             method: 'POST',
 
             data: {
+                service_invoice: service_invoice,
                 port_name: $port_name
             },
 
@@ -1221,29 +1195,23 @@ if ($service->ves_installation == true) {
 
     }
 
-    //Get Service Detail
+    //Disabled Maintenance
 
-    function getServiceDetail() {
-        $.ajax({
+    function disable_maintenance(value) {
 
-            url: '<?= base_url(); ?>/service/tbl_service_detail',
+        if('<?=$service->ves_installation?>' == 'true'){
+            $('#ves_installation').attr('checked', true);
+        }else if('<?=$service->ves_survey?>' == 'true'){
+            $('#ves_survey').attr('checked', true);
+        }
 
-            method: 'POST',
+        $('#ves_maintenance').attr('disabled', true);
+        $('#ves_installation').attr('disabled', true);
+        $('#ves_survey').attr('disabled', true);
 
-            data: {
-
-                service_invoice: service_invoice
-
-            },
-
-            success: function(res) {
-
-                $('#showServiceDetail').html(res);
-
-            }
-
-        })
     }
+
+    //Disabled Maintenance
 
     $(document).ready(function() {
         optionProject();
@@ -1258,7 +1226,7 @@ if ($service->ves_installation == true) {
         optionPackage();
         optionPackageInternet();
         optionAdmin();
-        getServiceDetail();
+        disable_maintenance('<?= $service->ves_maintenance ?>');
     });
 
     // Update Service
@@ -1305,6 +1273,8 @@ if ($service->ves_installation == true) {
 
         let port_name = $('#port_name').val();
 
+        let port_province = $('#port_province').val();
+
         let admin_name = $('#admin_name').val();
 
         let product = $('#product').val();
@@ -1331,7 +1301,7 @@ if ($service->ves_installation == true) {
 
         if (service_invoice == '' || projects == '' || cus_name == '' || cus_tel == '' || cus_address == '' || cus_email == '' || cus_zipcode == '' || ves_fleet == '' || ves_name == '' ||
             ves_type == '' || ves_callsign == '' || ves_imo == '' || ves_mmsi == '' || ves_year == '' || ves_maintenance == '' || con_name == '' || con_tel == '' ||
-            port_name == '' || con_email == '' || admin_name == '' || product == '' || pack_name == '' || pack_internet == '' || remark_create == '' ||
+            port_name == '' || con_email == '' || admin_name == '' || product == '' || remark_create == '' || port_province == '' ||
             create_date == '' || due_date == '' || end_date == '' || eta == '' || etd == '' || contract_start == '' || contract_end == '') {
 
             Swal.fire({
@@ -1434,6 +1404,8 @@ if ($service->ves_installation == true) {
                                 con_tel: con_tel,
 
                                 port_name: port_name,
+
+                                port_province: port_province,
 
                                 con_email: con_email,
 

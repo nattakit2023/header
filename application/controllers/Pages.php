@@ -70,7 +70,7 @@ class Pages extends CI_Controller
 
             case 'service':
 
-                $data['title'] = 'รายการส่งซ่อม';
+                $data['title'] = 'รายการส่งซ่อมทั้งหมด';
 
                 $sidebar['sidebar'] = 'job';
 
@@ -170,11 +170,21 @@ class Pages extends CI_Controller
 
                 $data['service'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $this->input->get('service_invoice')]);
 
-                $data['project'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $this->input->get('service_invoice')]);
-
                 $data['product'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $this->input->get('service_invoice')]);
 
-                $data['vessel'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $this->input->get('service_invoice')]);
+                $sidebar['sidebar'] = '';
+
+                break;
+
+                //รายงานต่างๆ 
+
+            case 'cm_create':
+
+                $data['title'] = 'ปฏิทินการทำงาน';
+
+                $data['service'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $this->input->get('service_invoice')]);
+
+                $data['product'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $this->input->get('service_invoice')]);
 
                 $sidebar['sidebar'] = '';
 
@@ -184,9 +194,19 @@ class Pages extends CI_Controller
 
             case 'report_service':
 
-                $data['title'] = 'รายงาน JOB ORDER';
+                $data['title'] = 'Report Job Order';
 
-                $sidebar['sidebar'] = '';
+                $sidebar['sidebar'] = 'report';
+
+                break;
+
+            case 'report_fleet':
+
+                $data['title'] = 'Report Vessel Fleet';
+
+                $sidebar['sidebar'] = 'report';
+
+                $data['fleet'] = $this->Function_model4->fetchDataResult('departments', '', 'id', 'ASC');
 
                 break;
 
@@ -220,41 +240,13 @@ class Pages extends CI_Controller
         $this->load->view('template/footer');
     }
 
-    function update_status($invoice)
+
+    function create_equipment($invoice)
     {
         if ($invoice == null) {
-
-            show_404();
-            exit();
+            redirect('pages/dashboard');
         }
-
-        $data_arr = [
-            'service_status' => ''
-        ];
-
-        $where = [
-            'service_invoice' => $invoice
-        ];
-
-        $this->Function_model->updateData('tbl_service', $where, $data_arr);
-
-
-        $data['title'] = 'รายงาน JOB ORDER';
-
-        $sidebar['sidebar'] = '';
-
-        $this->load->view('template/header', $data);
-
-        $this->load->view('template/navbar');
-
-        $this->load->view('template/sidebar', $sidebar);
-
-        $this->load->view('pages/report_service', $data);
-
-        $this->load->view('template/footer');
     }
-
-
 
     //รายละเอียแจ้งซ่อม
 
@@ -267,23 +259,23 @@ class Pages extends CI_Controller
             exit();
         }
 
-        $data['atp_upload'] = $this->Function_model->getDataRow('tbl_atp_upload_back', ['service_invoice' => $invoice]);
+        $data['atp_upload'] = count($this->Function_model->fetchDataResult('tbl_atp_upload_back', ['service_invoice' => $invoice]));
 
         $data['engineer'] = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $invoice]);
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', ['service_invoice' => $invoice]);
 
         $data['service_package'] = $this->Function_model->fetchDataResult('tbl_service_package', ['service_invoice' => $invoice]);
 
         $data['service_product'] = $this->Function_model->fetchDataResult('tbl_service_product', ['service_invoice' => $invoice]);
-
-        $data['service_project'] = $this->Function_model->fetchDataResult('tbl_service_project', ['service_invoice' => $invoice]);
 
         $data['service'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $invoice]);
 
         $data['image'] = $this->Function_model->fetchDataResult('tbl_uploads', ['service_invoice' => $invoice]);
 
         $data['image_back'] = $this->Function_model->fetchDataResult('tbl_uploads_back', ['service_invoice' => $invoice]);
+
+        $data['admin_name'] = $this->session->userdata('admin_name');
+
+        $data['admin_position'] = $this->session->userdata('admin_position');
 
         $sidebar['sidebar'] = 'job';
 
@@ -293,7 +285,7 @@ class Pages extends CI_Controller
             exit();
         }
 
-        $data['title'] = 'ใบแจ้งซ่อมเลขที่ ' . $data['service']->service_invoice;
+        $data['title'] = 'Job Order :  ' . $data['service']->service_invoice;
 
         $data['active'] = 'service_detail';
 
@@ -331,9 +323,19 @@ class Pages extends CI_Controller
             $data['active'] = 'pms_suc';
             $data['pms'] = 'pms';
             $data['title'] = strtoupper('pms') . ' Reports';
+        } else if ($rec == 'cm_cre') {
+            $sidebar['sidebar'] = 'cm';
+            $data['active'] = 'cm_cre';
+            $data['pms'] = 'cm';
+            $data['title'] = strtoupper('cm') . ' Reports';
+        } else if ($rec == 'cm_suc') {
+            $sidebar['sidebar'] = 'cm';
+            $data['active'] = 'cm_suc';
+            $data['pms'] = 'cm';
+            $data['title'] = strtoupper('cm') . ' Reports';
         } else {
             $data['active'] = $rec;
-            $sidebar['sidebar'] = 'report';
+            $sidebar['sidebar'] = 'check';
             $data['pms'] = $rec;
             $data['title'] = strtoupper($rec) . ' Reports';
         }
@@ -344,7 +346,13 @@ class Pages extends CI_Controller
 
         $this->load->view('template/sidebar', $sidebar);
 
-        $this->load->view('pages/pms', $data);
+        if ($data['pms'] != 'cm') {
+            $this->load->view('pages/pms', $data);
+        } else {
+            $this->load->view('pages/cm', $data);
+        }
+
+
 
         $this->load->view('template/footer');
     }
@@ -367,7 +375,7 @@ class Pages extends CI_Controller
 
         $data['active'] = 'pms';
 
-        $sidebar['sidebar'] = 'report';
+        $sidebar['sidebar'] = 'check';
 
         $this->load->view('template/header', $data);
 
@@ -452,7 +460,6 @@ class Pages extends CI_Controller
         $this->load->view('template/footer');
     }
 
-
     //รายละเอียลูกค้า
 
     function customer_detail($cus_id)
@@ -486,8 +493,6 @@ class Pages extends CI_Controller
 
         $this->load->view('template/footer');
     }
-
-
 
     //เปลี่ยนรหัสผ่าน
 
@@ -545,8 +550,6 @@ class Pages extends CI_Controller
             exit();
         }
     }
-
-
 
     //logout ออกจากระบบ
 

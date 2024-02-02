@@ -30,7 +30,7 @@
 
                 <td class="text-center">
 
-                    <button onclick="edit('<?= $item->con_id; ?>')" con_id="<?= $item->con_id; ?>" type="button" class="btn btn-success btn-sm rounded-0" data-toggle="modal" data-target="#modalEditContact"><i class="fas fa-edit"></i></button>
+                    <button onclick="edit('<?= $item->con_id; ?>')" type="button" class="btn btn-success btn-sm rounded-0"><i class="fas fa-edit"></i></button>
 
                     <button onclick="del('<?= $item->con_id; ?>')" type="button" class="btn btn-danger btn-sm rounded-0"><i class="fas fa-trash"></i></button>
 
@@ -167,6 +167,8 @@
             success: function(res) {
 
                 if (res.status === 'SUCCESS') {
+
+                    $('#modalEditContact').modal('show');
 
                     $('#edit_con_id').val(res.data.con_id);
 

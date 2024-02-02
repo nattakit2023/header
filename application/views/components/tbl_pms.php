@@ -117,7 +117,7 @@
 
                         <?php } else if ($item->$pms == 'created') { ?>
 
-                            <a class="btn btn-sm btn-outline-danger rounded-0" target="_blank" href="<?= base_url(); ?>service/print_report?pms=<?= $pms ?>&invoice=<?= $item->service_invoice ?>"><?= strtoupper($pms) ?></a>
+                            <a class="btn btn-sm btn-outline-danger rounded-0" target="_blank" href="<?= base_url(); ?>prints/print_report?pms=<?= $pms ?>&invoice=<?= $item->service_invoice ?>"><?= strtoupper($pms) ?></a>
 
                             <a href="#" class="btn btn-sm btn-outline-success rounded-0">Edit <?= strtoupper($pms) ?></a>
 

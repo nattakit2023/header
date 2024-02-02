@@ -10,11 +10,11 @@
 
             <th style="width: 10%">End Date</th>
 
-            <th style="width: 15%">Engineer</th>
+            <th style="width: 15%">Customer</th>
 
             <th style="width: 15%">Vessel Name</th>
 
-            <th style="width: 15%">Tel</th>
+            <th style="width: 15%">Status</th>
 
             <th style="width: 10%">ตัวเลือก</th>
 
@@ -30,28 +30,44 @@
 
                 <td><?= $item->pms_invoice; ?></td>
 
-                <td><?= date_format(date_create($item->due_date), 'd/m/Y'); ?></td>
+                <td><?= date_format(date_create($item->plan_due_pms), 'd/m/Y'); ?></td>
 
-                <td><?= date_format(date_create($item->end_date), 'd/m/Y'); ?></td>
+                <td><?= date_format(date_create($item->plan_end_pms), 'd/m/Y'); ?></td>
 
                 <td><?= $item->cus_name ?></td>
 
-                <td><?php $i = 1;
-                    foreach ($vessel as $ves) {
-                        if ($i > 1) {
-                            echo ',';
-                        }
-                        if ($ves->service_invoice == $item->from_invoice) {
-                            echo $ves->ves_name;
-                        }
+                <td><?= $item->ves_name ?></td>
 
-                    ?>
-                    <?php } ?></td>
+                <td><?php switch ($item->pms_status) {
+                        case 'created':
 
-                <td><?= $item->cus_tel; ?></td>
+                            echo '<span class="badge badge-dark">Planning</span>';
+
+                            break;
+
+                        case 'success':
+
+                            echo '<span class="badge badge-success">Succes</span>';
+
+                            break;
+
+                        default:
+
+                            echo '';
+                    } ?></td>
 
                 <td class="text-center">
-                    <a href="<?= base_url(); ?>pages/service_detail/<?= $item->pms_invoice; ?>" target="_blank" class="btn btn-sm btn-outline-primary rounded-0">Details</a>
+                    <div class="btn-group">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-toggle="dropdown"><i class="assignment"></i>Action</button>
+                            <div class="dropdown-menu">
+                                <button type="button" target="_blank" onclick="detail('<?= $item->pms_invoice; ?>')" class="dropdown-item">Details</button>
+                                    <?php if ($item->pms_status != 'success') : ?>
+                                        <button onclick="modalEditService('<?= $item->pms_invoice; ?>')" class="dropdown-item">Edit Calendar</button>
+                                    <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
                 </td>
 
             </tr>
@@ -65,145 +81,6 @@
 <input type="hidden" id="edit_con_id">
 
 <script>
-    function del(con_id) {
-
-        Swal.fire({
-
-            title: 'ลบผู้ใช้งาน',
-
-            text: "ต้องการลบข้อมูลผู้ใช้งานนี้?",
-
-            icon: 'warning',
-
-            showCancelButton: true,
-
-            confirmButtonText: 'ตกลง',
-
-            cancelButtonText: 'ยกเลิก'
-
-        }).then((result) => {
-
-            if (result.isConfirmed) {
-
-                Swal.fire({
-
-                    html: 'กำลังลบข้อมูลผู้ใช้งาน กรุณารอสักครู่',
-
-                    allowEnterKey: false,
-
-                    allowEscapeKey: false,
-
-                    allowOutsideClick: false,
-
-                    timerProgressBar: true,
-
-                    didOpen: () => {
-
-                        Swal.showLoading();
-
-                        $.ajax({
-
-                            url: '<?= base_url(); ?>contact/del_contact',
-
-                            method: 'POST',
-
-                            dataType: 'JSON',
-
-                            data: {
-
-                                con_id: con_id
-
-                            },
-
-                            success: function(res) {
-
-                                if (res.status === 'SUCCESS') {
-
-                                    Swal.fire({
-
-                                        icon: 'success',
-
-                                        title: 'สำเร็จ',
-
-                                        text: 'ลบข้อมูลผู้ใช้เรียบร้อยแล้ว',
-
-                                        showConfirmButton: false,
-
-                                        timer: 1500
-
-                                    });
-
-                                    window.location.assign('<?= base_url(); ?>pages/contact');
-
-                                } else {
-
-                                    Swal.fire({
-
-                                        icon: 'error',
-
-                                        title: 'ผิดพลาด',
-
-                                        text: res.mesage,
-
-                                        confirmButtonText: 'ตกลง'
-
-                                    });
-
-                                    return false;
-
-                                }
-
-                            }
-
-                        })
-
-                    }
-
-                })
-
-            }
-
-        })
-
-    }
-
-
-    function edit(con_id) {
-
-        $.ajax({
-
-            url: '<?= base_url(); ?>contact/get_contact',
-
-            method: 'POST',
-
-            dataType: 'JSON',
-
-            data: {
-                con_id: con_id
-            },
-
-            success: function(res) {
-
-                if (res.status === 'SUCCESS') {
-
-                    $('#edit_con_id').val(res.data.con_id);
-
-                    $('#edit_con_name').val(res.data.con_name);
-
-                    $('#edit_con_email').val(res.data.con_email);
-
-                    $('#edit_con_tel').val(res.data.con_tel);
-
-                }
-
-            }
-
-        })
-
-    }
-
-
-
     $('#tblCalendar2').DataTable({
 
         "paging": true,

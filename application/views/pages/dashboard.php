@@ -151,118 +151,72 @@
 
         </div>
 
-        <div class="container-fluid">
+        <style>
+            .btn_event {
+                width: 100px;
+                border-radius: 0.25rem;
+                background-color: #ffffff;
+                border: 2px solid #ddd;
+                text-align: center;
+                cursor: pointer;
+            }
+        </style>
 
-            <style>
-                .dashboard-menu img {
-
-                    transition: all 0.2s ease;
-
-                    filter: grayscale(0.5);
-
-                }
-
-
-
-                .dashboard-menu img:hover {
-
-                    transform: scale(1.1);
-
-                    filter: none;
-
-                }
-            </style>
-
-            <div class="row">
-
+        <div class="container-fluid ">
+            <div class="row ">
                 <div class="col-md-12">
-
-                    <div class="card rounded-0">
-
+                    <div class="card rounded-0 ">
                         <div class="card-header rounded-0 bg-dark">
-
-                            Menu
-
+                            <div class="row">
+                                <div class="col" id="header-chart">
+                                    Chart Job Order
+                                </div>
+                                <div class="col-auto">
+                                    <div class="dropdown">
+                                        <button class="dropdown-toggle btn_event" data-toggle="dropdown">Action</button>
+                                        <div class="dropdown-menu">
+                                            <button class="dropdown-item" onclick="chart('Year')">Year</button>
+                                            <button class="dropdown-item" onclick="chart('Month')">Month</button>
+                                            <button class="dropdown-item" onclick="chart('Week')">Week</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
                         <div class="card-body">
-
-                            <!-- เมนู -->
-
-                            <div class="row mt-3">
-
-                                <div class="col-md-2 col-sm-6 col-6 mb-3">
-
-                                    <a href="<?= base_url(); ?>pages/service_create" class="dashboard-menu">
-
-                                        <img src="<?= base_url(); ?>/assets/icon/service.jpg" style="width: 100%">
-
-                                    </a>
-
+                            <div class="row">
+                                <div id="chart">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-dark" role="status">
+                                            <span class="sr-only">Loading...</span>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div class="col-md-2 col-sm-6 col-6 mb-3">
-
-                                    <a href="<?= base_url(); ?>pages/service" class="dashboard-menu">
-
-                                        <img src="<?= base_url(); ?>/assets/icon/service_report.jpg" style="width: 100%">
-
-                                    </a>
-
-                                </div>
-
-                                <div class="col-md-2 col-sm-6 col-6 mb-3">
-
-                                    <a href="<?= base_url(); ?>pages/calendar" class="dashboard-menu">
-
-                                        <img src="<?= base_url(); ?>/assets/icon/customer.jpg" style="width: 100%">
-
-                                    </a>
-
-                                </div>
-
-                                <div class="col-md-2 col-sm-6 col-6 mb-3">
-
-                                    <a href="<?= base_url(); ?>pages/report_service" class="dashboard-menu">
-
-                                        <img src="<?= base_url(); ?>/assets/icon/report.jpg" style="width: 100%">
-
-                                    </a>
-
-                                </div>
-
-                                <div class="col-md-2 col-sm-6 col-6 mb-3">
-
-                                    <a href="<?= base_url(); ?>pages/product" class="dashboard-menu">
-
-                                        <img src="<?= base_url(); ?>/assets/icon/product.jpg" style="width: 100%">
-
-                                    </a>
-
-                                </div>
-
-                                <div class="col-md-2 col-sm-6 col-6 mb-3">
-
-                                    <a href="<?= base_url(); ?>pages/user" class="dashboard-menu">
-
-                                        <img src="<?= base_url(); ?>/assets/icon/user.jpg" style="width: 100%">
-
-                                    </a>
-
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card rounded-0">
+                        <div class="card-header rounded-0 bg-dark">
+                            Contract Vessel
+                        </div>
+                        <div class="card-body">
+                            <div class="row" id="tblContract">
+                                <div class="text-center">
+                                    <div class="spinner-border text-dark" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
                                 </div>
 
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
     </section>
 
 </div>
@@ -272,6 +226,28 @@
 
 
 <script>
+    var day_month_arr = [31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    var date = new Date();
+
+    var year = date.getFullYear();
+
+    var month = date.getMonth();
+
+    function getDateFeb(year) {
+        day_month = year % 4;
+
+        if (year % 100 == 0) {
+            return 28;
+        }
+
+        if (day_month == 0) {
+            return 29;
+        } else {
+            return 28;
+        }
+    }
+
     function getServiceAmount() {
 
         $.ajax({
@@ -288,13 +264,10 @@
 
                     $('#amountAllService').html(res.amount_all_service);
 
-                    $('#amountServiceApprove').html(res.amount_service_approve);
-
                     $('#amountServiceWait').html(res.amount_service_wait);
 
                     $('#amountServiceFixed').html(res.amount_service_fixed);
 
-                    $('#amountCustomer').html(res.amount_customer);
 
                 } else {
 
@@ -308,10 +281,50 @@
 
     }
 
+    function chart_job(start, end) {
+        $.ajax({
+            url: '<?= base_url() ?>dashboard/chart_job',
+            method: 'POST',
+            data: {
+                start: start,
+                end: end
+            },
+            success: function(res) {
+                $('#chart').html(res);
+            }
+        });
+    }
+
+    function chart(value) {
+        if (value == 'Year') {
+            start = year + '-1-1';
+            end = year + '-12-31';
+            chart_job(start, end);
+        } else if (value == 'Month') {
+            day_month_arr[1] = getDateFeb(year);
+            start = year + '-' + (month + 1) + '-1';
+            end = year + '-' + (month + 1) + '-' + day_month_arr[month];
+            chart_job(start, end);
+        } else {
+
+        }
+        $('#header-chart').html('Chart of ' + value);
+    }
+
+    function tblContract() {
+        $.ajax({
+            url: '<?= base_url() ?>dashboard/tblContract',
+            method: 'POST',
+            success: function(res) {
+                $('#tblContract').html(res);
+            }
+        });
+    }
+
     $(document).ready(function() {
-
         getServiceAmount();
-
+        chart('Year');
+        tblContract();
     });
 
     $(document).on('submit', '#formSearchInvoice', function(e) {

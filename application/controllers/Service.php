@@ -1,9 +1,5 @@
 <?php
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
-
 defined('BASEPATH') or exit('No direct script access allowed');
 
 require FCPATH . 'vendor/autoload.php';
@@ -25,7 +21,6 @@ class Service extends CI_Controller
     }
 
     public function index()
-
     {
 
         redirect('/');
@@ -349,13 +344,8 @@ class Service extends CI_Controller
 
             $data['service'] = $this->Function_model->fetchDataResult('tbl_service', $where_arr, 'service_invoice', 'ASC');
         } else {
-            $data['service'] = $this->Function_model->fetchDataResult('tbl_service', '', 'service_invoice', 'ASC');
+            $data['service'] = $this->Function_model->fetchDataResult('tbl_service', ['service_status !=' => ''], 'service_invoice', 'ASC');
         }
-
-
-
-
-        $data['service_vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', '', 'id', 'ASC');
 
         $data['admin'] = $this->Function_model->fetchDataResult('tbl_admin', ['admin_name' => $admin_name], 'admin_id', 'ASC');
 
@@ -378,6 +368,8 @@ class Service extends CI_Controller
         }
 
         $service_invoice = $this->input->post('service_invoice');
+
+        $service = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
 
         $projects = $this->input->post('projects');
 
@@ -415,7 +407,290 @@ class Service extends CI_Controller
 
         $con_tel = $this->input->post('con_tel');
 
+        $con_email = $this->input->post('con_email');
+
         $port_name = $this->input->post('port_name');
+
+        $port_province = $this->input->post('port_province');
+
+        $admin_name = $this->input->post('admin_name');
+
+        $product = $this->input->post('product');
+
+        $pack_name = $this->input->post('pack_name');
+
+        $pack_internet = $this->input->post('pack_internet');
+
+        $remark_create = $this->input->post('remark_create');
+
+        $create_date = $this->input->post('create_date');
+
+        $due_date = $this->input->post('due_date');
+
+        $end_date = $this->input->post('end_date');
+
+        $eta = $this->input->post('eta');
+
+        $etd = $this->input->post('etd');
+
+        $contract_start = $this->input->post('contract_start');
+
+        $contract_end = $this->input->post('contract_end');
+
+        if ($service_invoice == null) {
+
+            echo json_encode([
+
+                'status' => 'ERROR',
+
+                'message' => 'No data input'
+
+            ]);
+
+            exit();
+        }
+
+        if ($ves_survey == null && $ves_installation == null) {
+            $ves_survey = '';
+            $ves_installation = '';
+        } elseif ($ves_survey == null) {
+            $ves_survey = '';
+        } elseif ($ves_installation == null) {
+            $ves_installation = '';
+        }
+
+        $data_arr = [
+
+            'service_invoice' => $service_invoice,
+
+            'project' => $projects,
+
+            'cus_name' => $cus_name,
+
+            'cus_address' => $cus_address,
+
+            'cus_tel' => $cus_tel,
+
+            'cus_email' => $cus_email,
+
+            'cus_zipcode' => $cus_zipcode,
+
+            'ves_fleet' => $ves_fleet,
+
+            'ves_name' => $ves_name,
+
+            'ves_type' => $ves_type,
+
+            'ves_callsign' => $ves_callsign,
+
+            'ves_imo' => $ves_imo,
+
+            'ves_mmsi' => $ves_mmsi,
+
+            'ves_year' => $ves_year,
+
+            'ves_maintenance' => $ves_maintenance,
+
+            'ves_survey' => $ves_survey,
+
+            'ves_installation' => $ves_installation,
+
+            'con_name' => $con_name,
+
+            'con_tel' => $con_tel,
+
+            'con_email' => $con_email,
+
+            'port_name' => $port_name,
+
+            'port_province' => $port_province,
+
+            'remark_create' => $remark_create,
+
+            'create_date' => $create_date,
+
+            'due_date' => $due_date,
+
+            'end_date' => $end_date,
+
+            'ETA' => $eta,
+
+            'ETD' => $etd,
+
+            'contract_start' => $contract_start,
+
+            'contract_end' => $contract_end,
+
+            'user_update' => $this->session->userdata('admin_name')
+
+        ];
+
+        $data = [
+            'service_invoice' => $service_invoice,
+
+            'due_date' =>  $due_date,
+
+            'end_date' => $end_date,
+
+            'title' => $service_invoice,
+
+            'descript' => $ves_name,
+
+        ];
+
+        $where = [
+            'service_invoice' => $service_invoice,
+        ];
+
+        //service
+
+        $res = $this->Function_model->updateData('tbl_calendar', $where, $data);
+
+        $res = $this->Function_model->updateData('tbl_service', $where, $data_arr);
+
+        $pms = $this->Function_model->getDataRow('tbl_pms_job', ['to_invoice' => $service_invoice]);
+
+        if ($pms != NULL) {
+            switch ($pms->product) {
+                case 'cctv':
+                    $this->Function_model->updateData('tbl_service', $where, ['cctv' => 1]);
+                    break;
+                case 'KU Band IO3' || 'KU Band Thaicom' || 'KA Band IO3' || 'KA Band Thaicom':
+                    $this->Function_model->updateData('tbl_service', $where, ['vsat' => 1]);
+                    break;
+                case 'voip':
+                    $this->Function_model->updateData('tbl_service', $where, ['voip' => 1]);
+                    break;
+                case 'tvro':
+                    $this->Function_model->updateData('tbl_service', $where, ['tvro' => 1]);
+                    break;
+            }
+        }
+
+
+        //product
+
+        $res = $this->Function_model->deleteData('tbl_service_product', $where);
+
+        foreach ($product as $name) {
+
+            $res = $this->Function_model->insertData('tbl_service_product', ['service_invoice' => $service_invoice, 'product' => $name]);
+        }
+
+        //package
+
+        $res = $this->Function_model->deleteData('tbl_service_package', $where);
+        if ($pack_name != null && $pack_internet != null) {
+            foreach ($pack_name as $item1) {
+                foreach ($pack_internet as $item2) {
+
+                    $check = $this->Function_model->getDataRow('tbl_package', ['pack_name' => $item1, 'pack_internet' => $item2]);
+
+                    if ($check != null) {
+                        $res = $this->Function_model->insertData('tbl_service_package', ['service_invoice' => $service_invoice, 'pack_name' => $item1, 'pack_internet' => $item2]);
+                    }
+                }
+            }
+        }
+
+        //engineer
+
+        $res = $this->Function_model->deleteData('tbl_engineer', $where);
+
+
+        foreach ($admin_name as $item) {
+            $res = $this->Function_model->insertData('tbl_engineer', ['service_invoice' => $service_invoice, 'engineer' => $item]);
+        }
+
+        $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
+
+        if ($res == TRUE) {
+
+            $this->Function_model->notify_email($service_invoice, $engineer, 'มีการแก้ไขข้อมูล ');
+
+            echo json_encode([
+
+                'status' => 'SUCCESS',
+
+                'service_invoice' => $service_invoice
+
+            ]);
+
+            exit();
+        } else {
+
+            echo json_encode([
+
+                'status' => 'ERROR',
+
+                'message' => 'Create Service Fail!'
+
+            ]);
+
+            exit();
+        }
+    }
+
+    //สร้างรายการซ่อม
+
+    function create_service()
+    {
+
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+
+            show_404();
+
+            exit();
+        }
+
+
+        $service_invoice = $this->Function_model->genInvoice();
+
+        $projects = $this->input->post('projects');
+
+        $cus_name = $this->input->post('cus_name');
+
+        $cus_tel = $this->input->post('cus_tel');
+
+        $cus_email = $this->input->post('cus_email');
+
+        $cus_address = $this->input->post('cus_address');
+
+        $cus_zipcode = $this->input->post('cus_zipcode');
+
+        $ves_fleet = $this->input->post('ves_fleet');
+
+        $ves_name = $this->input->post('ves_name');
+
+        $ves_type = $this->input->post('ves_type');
+
+        $ves_callsign = $this->input->post('ves_callsign');
+
+        $ves_imo = $this->input->post('ves_imo');
+
+        $ves_mmsi = $this->input->post('ves_mmsi');
+
+        $ves_year = $this->input->post('ves_year');
+
+        $ves_flag = $this->input->post('ves_flag');
+
+        $ves_home_port = $this->input->post('ves_home_port');
+
+        $ves_gross_tonnage = $this->input->post('ves_gross_tonnage');
+
+        $ves_maintenance = $this->input->post('ves_maintenance');
+
+        $ves_survey = $this->input->post('ves_survey');
+
+        $ves_installation = $this->input->post('ves_installation');
+
+        $con_name = $this->input->post('con_name');
+
+        $con_tel = $this->input->post('con_tel');
+
+        $port_name = $this->input->post('port_name');
+
+        $port_province = $this->input->post('port_province');
 
         $con_email = $this->input->post('con_email');
 
@@ -443,12 +718,14 @@ class Service extends CI_Controller
 
         $contract_end = $this->input->post('contract_end');
 
+        $user_create = $this->session->userdata('admin_name');
+
         if (
-            $service_invoice == null || $projects == null || $cus_name == null || $cus_tel == null ||  $cus_email == null || $cus_address == null || $cus_zipcode == null
-            || $ves_fleet == null || $ves_name == null || $ves_type == null || $ves_callsign == null || $ves_imo == null || $ves_mmsi == null || $ves_year == null
-            || $ves_maintenance == null || $con_name == null || $con_tel == null || $port_name == null || $con_email == null || $admin_name == null || $product == null
-            || $pack_name == null || $pack_internet == null || $remark_create == null || $create_date == null || $due_date == null || $end_date == null
-            || $eta == null || $etd == null || $contract_start == null || $contract_end == null
+            $service_invoice == null || $projects == null || $cus_name == null || $cus_tel == null ||  $cus_email == null || $cus_address == null || $cus_zipcode == null ||
+            $ves_fleet == null || $ves_name == null || $ves_type == null || $ves_callsign == null || $ves_imo == null || $ves_mmsi == null || $ves_year == null ||
+            $ves_flag == null || $ves_home_port == null || $ves_gross_tonnage == null || $ves_maintenance == null || $con_name == null || $con_tel == null || $port_name == null ||
+            $port_province == null || $con_email == null || $product == null || $remark_create == null || $create_date == null ||
+            $due_date == null || $end_date == null || $eta == null || $etd == null || $contract_start == null || $contract_end == null
         ) {
 
             echo json_encode([
@@ -462,18 +739,11 @@ class Service extends CI_Controller
             exit();
         }
 
-        if ($ves_survey == null && $ves_installation == null) {
-            $ves_survey = '';
-            $ves_installation = '';
-        } elseif ($ves_survey == null) {
-            $ves_survey = '';
-        } elseif ($ves_installation == null) {
-            $ves_installation = '';
-        }
-
         $data_arr = [
 
             'service_invoice' => $service_invoice,
+
+            'project' => $projects,
 
             'cus_name' => $cus_name,
 
@@ -487,6 +757,8 @@ class Service extends CI_Controller
 
             'ves_fleet' => $ves_fleet,
 
+            'ves_name' => $ves_name,
+
             'ves_type' => $ves_type,
 
             'ves_callsign' => $ves_callsign,
@@ -496,6 +768,12 @@ class Service extends CI_Controller
             'ves_mmsi' => $ves_mmsi,
 
             'ves_year' => $ves_year,
+
+            'ves_flag' => $ves_flag,
+
+            'ves_home_port' => $ves_home_port,
+
+            'ves_gross_tonnage' => $ves_gross_tonnage,
 
             'ves_maintenance' => $ves_maintenance,
 
@@ -510,6 +788,8 @@ class Service extends CI_Controller
             'con_email' => $con_email,
 
             'port_name' => $port_name,
+
+            'port_province' => $port_province,
 
             'remark_create' => $remark_create,
 
@@ -527,6 +807,8 @@ class Service extends CI_Controller
 
             'contract_end' => $contract_end,
 
+            'user_created' => $user_create
+
         ];
 
         $data = [
@@ -538,98 +820,92 @@ class Service extends CI_Controller
 
             'title' => $service_invoice,
 
-            'descript' => $remark_create,
+            'descript' => $ves_name,
 
             'color' => '#ffcca0'
         ];
 
 
+        $target = "uploads/" . $service_invoice . "/";
 
-        $where = [
-            'service_invoice' => $service_invoice,
-        ];
+        $target_back = "uploads_back/" . $service_invoice . "/";
 
-        //service
+        $target_atp_back =  "upload_atp_back/" . $service_invoice . "/";
+
+        $target_atp = "upload_atp/" . $service_invoice . "/";
+
+        $target_atp_network = "upload_atp/" . $service_invoice . "/network//";
+
+        $target_atp_A = "upload_atp/" . $service_invoice . "/app_a";
+
+        $target_atp_B = "upload_atp/" . $service_invoice . "/app_b";
+
+        $target_atp_C = "upload_atp/" . $service_invoice . "/app_c";
+
+
+        mkdir("$target");
+        chmod("$target", 0755);
+
+        mkdir("$target_back");
+        chmod("$target_back", 0755);
+
+        mkdir("$target_atp_back");
+        chmod("$target_atp_back", 0755);
+
+        mkdir("$target_atp");
+        chmod("$target_atp", 0755);
+
+        mkdir("$target_atp_network");
+        chmod("$target_atp_network", 0755);
+
+        mkdir("$target_atp_A");
+        chmod("$target_atp_A", 0755);
+
+        mkdir("$target_atp_B");
+        chmod("$target_atp_B", 0755);
+
+        mkdir("$target_atp_C");
+        chmod("$target_atp_C", 0755);
+
 
         $res = $this->Function_model->insertData('tbl_calendar', $data);
 
-        $res = $this->Function_model->updateData('tbl_service', $where, $data_arr);
+        $res = $this->Function_model->insertData('tbl_service', $data_arr);
 
-        $pms = $this->Function_model->getDataRow('tbl_pms_job', ['from_invoice' => $service_invoice]);
-
-        if ($pms != NULL) {
-            switch ($pms->product) {
-                case 'cctv':
-                    $this->Function_model->updateData('tbl_service', $where, ['cctv' => 1]);
-                    break;
-                case 'vsat':
-                    $this->Function_model->updateData('tbl_service', $where, ['vsat' => 1]);
-                    break;
-                case 'voip':
-                    $this->Function_model->updateData('tbl_service', $where, ['voip' => 1]);
-                    break;
-                case 'tvro':
-                    $this->Function_model->updateData('tbl_service', $where, ['tvro' => 1]);
-                    break;
-            }
-        }
-
-
-        //product
-
-        $res = $this->Function_model->deleteData('tbl_service_product', $where);
+        $where_arr = ['service_invoice' => $service_invoice];
 
         foreach ($product as $name) {
-
             $res = $this->Function_model->insertData('tbl_service_product', ['service_invoice' => $service_invoice, 'product' => $name]);
         }
 
-        //package
+        foreach ($admin_name as $name) {
+            $res = $this->Function_model->insertData('tbl_engineer', ['service_invoice' => $service_invoice, 'engineer' => $name]);
+        }
 
-        $res = $this->Function_model->deleteData('tbl_service_package', $where);
+        if ($pack_name != null && $pack_internet != null) {
+            foreach ($pack_name as $item1) {
+                foreach ($pack_internet as $item2) {
 
-        foreach ($pack_name as $item1) {
-            foreach ($pack_internet as $item2) {
+                    $check = $this->Function_model->getDataRow('tbl_package', ['pack_name' => $item1, 'pack_internet' => $item2]);
 
-                $check = $this->Function_model->getDataRow('tbl_package', ['pack_name' => $item1, 'pack_internet' => $item2]);
-
-                if ($check != null) {
-                    $res = $this->Function_model->insertData('tbl_service_package', ['service_invoice' => $service_invoice, 'pack_name' => $item1, 'pack_internet' => $item2]);
+                    if ($check != null) {
+                        $res = $this->Function_model->insertData('tbl_service_package', ['service_invoice' => $service_invoice, 'pack_name' => $item1, 'pack_internet' => $item2]);
+                    }
                 }
             }
         }
 
-        //project
-
-        $res = $this->Function_model->deleteData('tbl_service_project', $where);
-
-        foreach ($projects as $item) {
-            $res = $this->Function_model->insertData('tbl_service_project', ['service_invoice' => $service_invoice, 'projects' => $item]);
-        }
-
-        //engineer
-
-        $res = $this->Function_model->deleteData('tbl_engineer', $where);
-
-        foreach ($admin_name as $item) {
-            $res = $this->Function_model->insertData('tbl_engineer', ['service_invoice' => $service_invoice, 'engineer' => $item]);
-        }
-
-        //vessel name
-
-        $res = $this->Function_model->deleteData('tbl_vessel_name', $where);
-
-        foreach ($ves_name as $item) {
-            $res = $this->Function_model->insertData('tbl_vessel_name', ['service_invoice' => $service_invoice, 'ves_name' => $item]);
-        }
-
         $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
+
+
+
+        $this->Function_model->insertData('tbl_notify', ['service_invoice' => $service_invoice, 'service_status' => 'created', 'create_date' => date('Y-m-d H:i:s')]);
 
         if ($res == TRUE) {
 
-            $this->notify_line($service_invoice, $engineer, 'มีการแก้ไขข้อมูล ');
+            $this->Function_model->notify_line($service_invoice, $engineer, 'กรุณาเพิ่มEquipment');
 
-            $this->notify_email($service_invoice, $engineer, 'มีการแก้ไขข้อมูล ');
+            $this->Function_model->notify_email($service_invoice, $engineer, 'กรุณาเพิ่มEquipment');
 
             echo json_encode([
 
@@ -653,764 +929,6 @@ class Service extends CI_Controller
             exit();
         }
     }
-
-
-    //สร้างรายการซ่อม
-
-    function create_service()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $id = $this->input->get('id');
-
-        $id_calendar = $this->input->get('id_calendar');
-
-        if ($id != NULL && $id_calendar != NULL) {
-
-            $get_id = $this->Function_model->getDataRow('tbl_pms_job', ['id' => $id]);
-
-            $get_invoice = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $get_id->from_invoice]);
-
-            $service_invoice = $this->Function_model->genInvoice();
-
-            $projects = $get_id->project;
-
-            $cus_name = $get_id->cus_name;
-
-            $cus_tel = $get_id->cus_tel;
-
-            $cus_email = $get_id->cus_email;
-
-            $cus_address = $get_id->cus_address;
-
-            $cus_zipcode = $get_id->cus_zipcode;
-
-            $ves_fleet = $get_id->ves_fleet;
-
-            $ves_name = $get_id->ves_name;
-
-            $ves_type = $get_invoice->ves_type;
-
-            $ves_callsign = $get_invoice->ves_callsign;
-
-            $ves_imo = $get_invoice->ves_imo;
-
-            $ves_mmsi = $get_invoice->ves_mmsi;
-
-            $ves_year = $get_invoice->ves_year;
-
-            $ves_flag = $get_invoice->ves_flag;
-
-            $ves_home_port = $get_invoice->ves_home_port;
-
-            $ves_gross_tonnage = $get_invoice->ves_gross_tonnage;
-
-            $ves_maintenance = $get_invoice->ves_maintenance;
-
-            $ves_survey = 'false';
-
-            $ves_installation = 'false';
-
-            $con_name = $get_invoice->con_name;
-
-            $con_tel = $get_invoice->con_tel;
-
-            $port_name = $get_invoice->port_name;
-
-            $port_province = $get_invoice->port_province;
-
-            $con_email = $get_invoice->con_email;
-
-            $admin_name = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $get_id->from_invoice]);
-
-            $product = $get_id->product;
-
-            $package = $this->Function_model->fetchDataResult('tbl_service_package', ['service_invoice' => $get_id->from_invoice]);
-
-            $remark_create = $get_invoice->remark_create;
-
-            $create_date = $get_id->create_date;
-
-            $due_date = $get_id->due_date;
-
-            $end_date = $get_id->end_date;
-
-            $eta = $get_invoice->ETA;
-
-            $etd = $get_invoice->ETD;
-
-            $contract_start = $get_invoice->contract_start;
-
-            $contract_end = $get_invoice->contract_end;
-
-            $service_status = 'verify';
-
-            if (
-                $service_invoice == null || $projects == null || $cus_name == null || $cus_tel == null ||  $cus_email == null || $cus_address == null || $cus_zipcode == null ||
-                $ves_fleet == null || $ves_name == null || $ves_type == null || $ves_callsign == null || $ves_imo == null || $ves_mmsi == null || $ves_year == null ||
-                $ves_flag == null || $ves_home_port == null || $ves_gross_tonnage == null || $ves_maintenance == null || $con_name == null || $con_tel == null || $port_name == null ||
-                $port_province == null || $con_email == null || $product == null || $remark_create == null || $create_date == null ||
-                $due_date == null || $end_date == null || $eta == null || $etd == null || $contract_start == null || $contract_end == null
-            ) {
-
-                echo json_encode([
-
-                    'status' => 'ERROR',
-
-                    'message' => 'Data Not Found'
-
-                ]);
-
-                exit();
-            }
-
-            $this->Function_model->updateData('tbl_pms_job', ['id' => $id], ['to_invoice' => $service_invoice, 'pms_status' => 'success']);
-
-            $this->Function_model->updateData('tbl_calendar', ['id' => $id_calendar], ['color' => '#82ff6c']);
-
-            $data_arr = [
-
-                'service_invoice' => $service_invoice,
-
-                'cus_name' => $cus_name,
-
-                'cus_address' => $cus_address,
-
-                'cus_tel' => $cus_tel,
-
-                'cus_email' => $cus_email,
-
-                'cus_zipcode' => $cus_zipcode,
-
-                'ves_fleet' => $ves_fleet,
-
-                'ves_type' => $ves_type,
-
-                'ves_callsign' => $ves_callsign,
-
-                'ves_imo' => $ves_imo,
-
-                'ves_mmsi' => $ves_mmsi,
-
-                'ves_year' => $ves_year,
-
-                'ves_flag' => $ves_flag,
-
-                'ves_home_port' => $ves_home_port,
-
-                'ves_gross_tonnage' => $ves_gross_tonnage,
-
-                'ves_maintenance' => $ves_maintenance,
-
-                'ves_survey' => $ves_survey,
-
-                'ves_installation' => $ves_installation,
-
-                'con_name' => $con_name,
-
-                'con_tel' => $con_tel,
-
-                'con_email' => $con_email,
-
-                'port_name' => $port_name,
-
-                'port_province' => $port_province,
-
-                'remark_create' => $remark_create,
-
-                'create_date' => $create_date,
-
-                'due_date' => $due_date,
-
-                'end_date' => $end_date,
-
-                'ETA' => $eta,
-
-                'ETD' => $etd,
-
-                'contract_start' => $contract_start,
-
-                'contract_end' => $contract_end,
-
-                'service_status' => $service_status
-
-            ];
-
-            $data = [
-                'service_invoice' => $service_invoice,
-
-                'due_date' =>  $due_date,
-
-                'end_date' => $end_date,
-
-                'title' => $service_invoice,
-
-                'descript' => $ves_name,
-
-                'color' => '#ffcca0'
-            ];
-
-
-            $target = "uploads/" . $service_invoice . "/";
-
-            $target_back = "uploads_back/" . $service_invoice . "/";
-
-            $target_atp_back =  "upload_atp_back/" . $service_invoice . "/";
-
-            $target_atp = "upload_atp/" . $service_invoice . "/";
-
-            $target_atp_network = "upload_atp/" . $service_invoice . "/network//";
-
-            $target_atp_A = "upload_atp/" . $service_invoice . "/app_a";
-
-            $target_atp_B = "upload_atp/" . $service_invoice . "/app_b";
-
-            $target_atp_C = "upload_atp/" . $service_invoice . "/app_c";
-
-
-            mkdir("$target");
-            chmod("$target", 0755);
-
-            mkdir("$target_back");
-            chmod("$target_back", 0755);
-
-            mkdir("$target_atp_back");
-            chmod("$target_atp_back", 0755);
-
-            mkdir("$target_atp");
-            chmod("$target_atp", 0755);
-
-            mkdir("$target_atp_network");
-            chmod("$target_atp_network", 0755);
-
-            mkdir("$target_atp_A");
-            chmod("$target_atp_A", 0755);
-
-            mkdir("$target_atp_B");
-            chmod("$target_atp_B", 0755);
-
-            mkdir("$target_atp_C");
-            chmod("$target_atp_C", 0755);
-
-
-            $res = $this->Function_model->insertData('tbl_calendar', $data);
-
-            $res = $this->Function_model->insertData('tbl_service', $data_arr);
-
-            $where_arr = ['service_invoice' => $service_invoice];
-
-            $this->Function_model->insertData('tbl_service_product', ['service_invoice' => $service_invoice, 'product' => $product]);
-
-            $this->Function_model->updateData('tbl_service', $where_arr, ['pms' => '1']);
-
-            if ($product == 'CCTV') {
-                $this->Function_model->updateData('tbl_service', $where_arr, ['cctv' => '1']);
-            } else if ($product == 'KU BAND IO3') {
-                $this->Function_model->updateData('tbl_service', $where_arr, ['vsat' => '1']);
-            } else if ($product == 'TVRO') {
-                $this->Function_model->updateData('tbl_service', $where_arr, ['tvro' => '1']);
-            } else if ($product == 'VOIP') {
-                $this->Function_model->updateData('tbl_service', $where_arr, ['voip' => '1']);
-            }
-
-            $this->Function_model->insertData('tbl_service_project', ['service_invoice' => $service_invoice, 'projects' => $projects]);
-
-            $this->Function_model->insertData('tbl_vessel_name', ['service_invoice' => $service_invoice, 'ves_name' => $ves_name]);
-
-
-            foreach ($admin_name as $name) {
-                $res = $this->Function_model->insertData('tbl_engineer', ['service_invoice' => $service_invoice, 'engineer' => $name->engineer]);
-            }
-
-            foreach ($package as $pack) {
-                $this->Function_model->insertData('tbl_service_package', ['service_invoice' => $service_invoice, 'pack_name' => $pack->pack_name, 'pack_internet' => $pack->pack_internet]);
-            }
-
-            $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
-
-            $this->Function_model->insertData('tbl_notify', ['service_invoice' => $service_invoice, 'status' => 'created']);
-
-            if ($res == TRUE) {
-
-                $this->notify_line($service_invoice, $engineer, 'กรุณาตรวจสอบและยืนยันข้อมูล');
-
-                $this->notify_email($service_invoice, $engineer, 'กรุณาตรวจสอบและยืนยันข้อมูล');
-
-                echo json_encode([
-
-                    'status' => 'SUCCESS',
-
-                    'service_invoice' => $service_invoice
-
-                ]);
-
-                exit();
-            } else {
-
-                echo json_encode([
-
-                    'status' => 'ERROR',
-
-                    'message' => 'Create Service Fail!'
-
-                ]);
-
-                exit();
-            }
-        } else {
-
-            $service_invoice = $this->Function_model->genInvoice();
-
-            $projects = $this->input->post('projects');
-
-            $cus_name = $this->input->post('cus_name');
-
-            $cus_tel = $this->input->post('cus_tel');
-
-            $cus_email = $this->input->post('cus_email');
-
-            $cus_address = $this->input->post('cus_address');
-
-            $cus_zipcode = $this->input->post('cus_zipcode');
-
-            $ves_fleet = $this->input->post('ves_fleet');
-
-            $ves_name = $this->input->post('ves_name');
-
-            $ves_type = $this->input->post('ves_type');
-
-            $ves_callsign = $this->input->post('ves_callsign');
-
-            $ves_imo = $this->input->post('ves_imo');
-
-            $ves_mmsi = $this->input->post('ves_mmsi');
-
-            $ves_year = $this->input->post('ves_year');
-
-            $ves_flag = $this->input->post('ves_flag');
-
-            $ves_home_port = $this->input->post('ves_home_port');
-
-            $ves_gross_tonnage = $this->input->post('ves_gross_tonnage');
-
-            $ves_maintenance = $this->input->post('ves_maintenance');
-
-            $ves_survey = $this->input->post('ves_survey');
-
-            $ves_installation = $this->input->post('ves_installation');
-
-            $con_name = $this->input->post('con_name');
-
-            $con_tel = $this->input->post('con_tel');
-
-            $port_name = $this->input->post('port_name');
-
-            $port_province = $this->input->post('port_province');
-
-            $con_email = $this->input->post('con_email');
-
-            $admin_name = $this->input->post('admin_name');
-
-            $product = $this->input->post('product');
-
-            $pack_name = $this->input->post('pack_name');
-
-            $pack_internet = $this->input->post('pack_internet');
-
-            $remark_create = $this->input->post('remark_create');
-
-            $create_date = $this->input->post('create_date');
-
-            $due_date = $this->input->post('due_date');
-
-            $end_date = $this->input->post('end_date');
-
-            $eta = $this->input->post('eta');
-
-            $etd = $this->input->post('etd');
-
-            $contract_start = $this->input->post('contract_start');
-
-            $contract_end = $this->input->post('contract_end');
-
-            if (
-                $service_invoice == null || $projects == null || $cus_name == null || $cus_tel == null ||  $cus_email == null || $cus_address == null || $cus_zipcode == null ||
-                $ves_fleet == null || $ves_name == null || $ves_type == null || $ves_callsign == null || $ves_imo == null || $ves_mmsi == null || $ves_year == null ||
-                $ves_flag == null || $ves_home_port == null || $ves_gross_tonnage == null || $ves_maintenance == null || $con_name == null || $con_tel == null || $port_name == null ||
-                $port_province == null || $con_email == null || $product == null || $remark_create == null || $create_date == null ||
-                $due_date == null || $end_date == null || $eta == null || $etd == null || $contract_start == null || $contract_end == null
-            ) {
-
-                echo json_encode([
-
-                    'status' => 'ERROR',
-
-                    'message' => 'No data input'
-
-                ]);
-
-                exit();
-            }
-
-            $data_arr = [
-
-                'service_invoice' => $service_invoice,
-
-                'cus_name' => $cus_name,
-
-                'cus_address' => $cus_address,
-
-                'cus_tel' => $cus_tel,
-
-                'cus_email' => $cus_email,
-
-                'cus_zipcode' => $cus_zipcode,
-
-                'ves_fleet' => $ves_fleet,
-
-                'ves_type' => $ves_type,
-
-                'ves_callsign' => $ves_callsign,
-
-                'ves_imo' => $ves_imo,
-
-                'ves_mmsi' => $ves_mmsi,
-
-                'ves_year' => $ves_year,
-
-                'ves_flag' => $ves_flag,
-
-                'ves_home_port' => $ves_home_port,
-
-                'ves_gross_tonnage' => $ves_gross_tonnage,
-
-                'ves_maintenance' => $ves_maintenance,
-
-                'ves_survey' => $ves_survey,
-
-                'ves_installation' => $ves_installation,
-
-                'con_name' => $con_name,
-
-                'con_tel' => $con_tel,
-
-                'con_email' => $con_email,
-
-                'port_name' => $port_name,
-
-                'port_province' => $port_province,
-
-                'remark_create' => $remark_create,
-
-                'create_date' => $create_date,
-
-                'due_date' => $due_date,
-
-                'end_date' => $end_date,
-
-                'ETA' => $eta,
-
-                'ETD' => $etd,
-
-                'contract_start' => $contract_start,
-
-                'contract_end' => $contract_end,
-
-            ];
-
-            $data = [
-                'service_invoice' => $service_invoice,
-
-                'due_date' =>  $due_date,
-
-                'end_date' => $end_date,
-
-                'title' => $service_invoice,
-
-                'descript' => $remark_create,
-
-                'color' => '#70c0ff'
-            ];
-
-
-            $target = "uploads/" . $service_invoice . "/";
-
-            $target_back = "uploads_back/" . $service_invoice . "/";
-
-            $target_atp_back =  "upload_atp_back/" . $service_invoice . "/";
-
-            $target_atp = "upload_atp/" . $service_invoice . "/";
-
-            $target_atp_network = "upload_atp/" . $service_invoice . "/network//";
-
-            $target_atp_A = "upload_atp/" . $service_invoice . "/app_a";
-
-            $target_atp_B = "upload_atp/" . $service_invoice . "/app_b";
-
-            $target_atp_C = "upload_atp/" . $service_invoice . "/app_c";
-
-
-            mkdir("$target");
-            chmod("$target", 0755);
-
-            mkdir("$target_back");
-            chmod("$target_back", 0755);
-
-            mkdir("$target_atp_back");
-            chmod("$target_atp_back", 0755);
-
-            mkdir("$target_atp");
-            chmod("$target_atp", 0755);
-
-            mkdir("$target_atp_network");
-            chmod("$target_atp_network", 0755);
-
-            mkdir("$target_atp_A");
-            chmod("$target_atp_A", 0755);
-
-            mkdir("$target_atp_B");
-            chmod("$target_atp_B", 0755);
-
-            mkdir("$target_atp_C");
-            chmod("$target_atp_C", 0755);
-
-
-            $res = $this->Function_model->insertData('tbl_calendar', $data);
-
-            $res = $this->Function_model->insertData('tbl_service', $data_arr);
-
-            $where_arr = ['service_invoice' => $service_invoice];
-
-            if ($ves_maintenance == 'Preventive Maintenance' && $ves_installation != true) {
-                $this->Function_model->updateData('tbl_service', $where_arr, ['pms' => '1']);
-            } else {
-                $this->Function_model->updateData('tbl_service', $where_arr, ['pms' => NULL]);
-            }
-
-            foreach ($product as $name) {
-                $res = $this->Function_model->insertData('tbl_service_product', ['service_invoice' => $service_invoice, 'product' => $name]);
-            }
-
-            foreach ($projects as $name) {
-                $res = $this->Function_model->insertData('tbl_service_project', ['service_invoice' => $service_invoice, 'projects' => $name]);
-            }
-
-            foreach ($ves_name as $name) {
-                $res = $this->Function_model->insertData('tbl_vessel_name', ['service_invoice' => $service_invoice, 'ves_name' => $name]);
-            }
-
-            foreach ($admin_name as $name) {
-                $res = $this->Function_model->insertData('tbl_engineer', ['service_invoice' => $service_invoice, 'engineer' => $name]);
-            }
-
-            foreach ($pack_name as $item1) {
-                foreach ($pack_internet as $item2) {
-
-                    $check = $this->Function_model->getDataRow('tbl_package', ['pack_name' => $item1, 'pack_internet' => $item2]);
-
-                    if ($check != null) {
-                        $res = $this->Function_model->insertData('tbl_service_package', ['service_invoice' => $service_invoice, 'pack_name' => $item1, 'pack_internet' => $item2]);
-                    }
-                }
-            }
-
-            $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
-
-
-
-            $this->Function_model->insertData('tbl_notify', ['service_invoice' => $service_invoice, 'status' => 'created']);
-
-            if ($res == TRUE) {
-
-                $this->notify_line($service_invoice, $engineer, 'กรุณาเพิ่มEquipment');
-
-                $this->notify_email($service_invoice, $engineer, 'กรุณาเพิ่มEquipment');
-
-                echo json_encode([
-
-                    'status' => 'SUCCESS',
-
-                    'service_invoice' => $service_invoice
-
-                ]);
-
-                exit();
-            } else {
-
-                echo json_encode([
-
-                    'status' => 'ERROR',
-
-                    'message' => 'Create Service Fail!'
-
-                ]);
-
-                exit();
-            }
-        }
-    }
-
-    //ลบสถานะ
-
-    function update_status($invoice)
-    {
-        if ($invoice == null) {
-
-            show_404();
-            exit();
-        }
-
-        $data_arr = [
-            'service_status' => 'uninstall'
-        ];
-
-        $where = [
-            'service_invoice' => $invoice
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', $where, $data_arr);
-
-        if ($res == TRUE) {
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'service_invoice' => $invoice
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'Create Service Fail!'
-
-            ]);
-
-            exit();
-        }
-
-        $this->load->view('pages/');
-    }
-
-
-    //ดึงข้อมูลใบซ่อม
-
-    function get_invoice()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No data input'
-
-            ]);
-
-            exit();
-        }
-
-        $res = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        if ($res != null) {
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'data' => [
-
-                    'service_id' => $res->service_id,
-
-                    'service_invoice' => $res->service_invoice,
-
-                    'option_vat' => $res->option_vat,
-
-                    'service_total' => number_format($res->service_total, 2),
-
-                    'service_price' => number_format($res->service_price, 2),
-
-                    'service_discount' => number_format($res->service_discount, 2),
-
-                    'service_vat' => number_format($res->service_vat, 2)
-
-                ]
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ไม่พบเลขใบส่งซ่อม'
-
-            ]);
-
-            exit();
-        }
-    }
-
-    //ค้นหาข้อมูลจากเลขทะเบียนรถ
-
-    function search_license_plate()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $license_plate = $this->input->post('license_plate');
-
-        if ($license_plate == null) {
-
-            echo '<div class="row">
-
-            <div class="col-md-12 mt-2 mb-2 text-center">
-
-                <h5 class="text-info">แจ้งเตือน! <small>กรอกเลขทะเบียนรถที่ต้องการค้นหา</small></h5>
-
-            </div>
-
-            </div>';
-
-            exit();
-        }
-
-        $this->db->like('license_plate', $license_plate, 'after');
-
-        $data['customer'] = $this->db->get('tbl_customer')->result();
-
-        $this->load->view('components/search_customer', $data);
-    }
-
-
 
     //ตารางรายการสินค้าและบริการ
 
@@ -1517,10 +1035,10 @@ class Service extends CI_Controller
 
         $service = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
 
-        $service_detail = $this->Function_model2->getDataRow('sma_products', ['name' => $service_name]);
+        $service_detail = $this->Function_model2->getDataRow('sma_products', ['code' => $service_name]);
 
 
-        if ($service_invoice == null || $service_name == null || $amount == null || $service_detail == NULL) {
+        if ($service_invoice == null || $service_name == null || $amount == null || $service_detail == null) {
 
             echo json_encode([
 
@@ -1546,14 +1064,15 @@ class Service extends CI_Controller
 
             'code' => $service_detail->code,
 
-            'service_name' => $service_name,
+            'service_name' => $service_detail->name,
 
             'amount' => $amount,
 
             'service_detail' => $service_detail->details,
 
-            'detail' => $detail
+            'detail' => $detail,
 
+            'user_created' => $this->session->userdata('admin_name')
         ];
 
         //insert to tbl_service_detail
@@ -1592,170 +1111,6 @@ class Service extends CI_Controller
                 'status' => 'ERROR',
 
                 'message' => 'มีบางอย่างผิดพลาด กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-        }
-    }
-
-    //อัพเดตส่วนลด
-
-    function update_discount()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        $service_discount = $this->input->post('service_discount');
-
-
-
-        if ($service_invoice == null || $service_discount == null) {
-
-            show_404();
-
-            exit();
-        }
-
-        $res_discount = $this->Function_model->updateData('tbl_service', ['service_invoice' => $service_invoice], ['service_discount' => $service_discount]);
-
-        if ($res_discount != TRUE) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'Have something wrong add discount'
-
-            ]);
-
-            exit();
-        }
-
-        $service = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        if ($service == null) {
-
-            show_404();
-
-            exit();
-        }
-
-        //ขั้นตอนการคำนวณสรุปยอด
-
-        $sum_detail = $this->Function_model->getSum('tbl_service_detail', 'total', ['service_invoice' => $service_invoice]);
-
-        switch ($service->option_vat) {
-
-            case 'in':
-
-                $sum_after_discount = $sum_detail - $service->service_discount; //ยอดหลังหักจากส่วนลด
-
-                $service_vat = ($sum_after_discount * 7) / 107; //หาค่าของ vat 7%
-
-                $service_price = $sum_after_discount - $service_vat;
-
-                $service_total = $sum_after_discount;
-
-                break;
-
-            case 'out':
-
-                $sum_after_discount = $sum_detail - $service->service_discount; //ยอดหลังหักจากส่วนลด
-
-                $service_vat = ($sum_after_discount * 7) / 100; //หาค่าของ vat 7%
-
-                $service_price = $sum_after_discount;
-
-                $service_total = ($sum_detail - $service->service_discount) + $service_vat;
-
-                break;
-
-            default:
-
-                $service_total = $sum_detail - $service->service_discount;
-
-                $service_price = $sum_detail - $service->service_discount;
-
-                $service_vat = 0;
-        }
-
-        $data_arr = [
-
-            'service_total' => $service_total,
-
-            'service_vat' => $service_vat,
-
-            'service_price' => $service_price
-
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', ['service_invoice' => $service_invoice], $data_arr);
-
-
-
-        if ($res == TRUE) {
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'แก้ไขส่วนลดเรียบร้อยแล้ว'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'มีบางอย่างผิดพลาด กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-        }
-    }
-
-    //ดึงเอาส่วนลด
-
-    function get_discount()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            show_404();
-
-            exit();
-        }
-
-        $res = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        if ($res != null) {
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'data' => [
-
-                    'service_discount' => $res->service_discount
-
-                ]
 
             ]);
         }
@@ -1847,139 +1202,6 @@ class Service extends CI_Controller
         }
     }
 
-
-
-    //อัพเดตฟังก์ชั่นของ vat 
-
-    function update_option_vat()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        $option_vat = $this->input->post('option_vat');
-
-        if ($service_invoice == null) {
-
-            show_404();
-
-            exit();
-        }
-
-
-
-        $service = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        if ($service == null) {
-
-            show_404();
-
-            exit();
-        }
-
-        $data_arr = [
-
-            'option_vat' => $option_vat
-
-        ];
-
-        $res_option_vat = $this->Function_model->updateData('tbl_service', ['service_invoice' => $service_invoice], $data_arr);
-
-        if ($res_option_vat != TRUE) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'Cannot update option for Vat'
-
-            ]);
-
-            exit();
-        }
-
-        //ขั้นตอนการคำนวณสรุปยอด
-
-        $sum_detail = $this->Function_model->getSum('tbl_service_detail', 'total', ['service_invoice' => $service_invoice]);
-
-        switch ($option_vat) {
-
-            case 'in':
-
-                $sum_after_discount = $sum_detail - $service->service_discount; //ยอดหลังหักจากส่วนลด
-
-                $service_vat = ($sum_after_discount * 7) / 107; //หาค่าของ vat 7%
-
-                $service_price = $sum_after_discount - $service_vat;
-
-                $service_total = $sum_after_discount;
-
-                break;
-
-            case 'out':
-
-                $sum_after_discount = $sum_detail - $service->service_discount; //ยอดหลังหักจากส่วนลด
-
-                $service_vat = ($sum_after_discount * 7) / 100; //หาค่าของ vat 7%
-
-                $service_price = $sum_after_discount;
-
-                $service_total = ($sum_detail - $service->service_discount) + $service_vat;
-
-                break;
-
-            default:
-
-                $service_total = $sum_detail - $service->service_discount;
-
-                $service_price = $sum_detail - $service->service_discount;
-
-                $service_vat = 0;
-        }
-
-        $data_arr = [
-
-            'service_total' => $service_total,
-
-            'service_vat' => $service_vat,
-
-            'service_price' => $service_price
-
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', ['service_invoice' => $service_invoice], $data_arr);
-
-        if ($res == TRUE) {
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'อัพเดตข้อมูลภาษีสำเร็จ'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'มีบางอย่างผิดพลาดกรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
     // Option history
 
     function option_history()
@@ -2027,10 +1249,19 @@ class Service extends CI_Controller
             exit();
         }
 
-        $res_his = count($this->Function_model->fetchDataResult('tbl_history', ['service_invoice' => $service_invoice], 'id', 'ASC'));
+        $where_arr = [
+
+            'service_invoice' => $service_invoice
+
+        ];
+
+        $res_his = count($this->Function_model->fetchDataResult('tbl_history', $where_arr, 'id', 'ASC'));
+
         $data = [
 
             'service_invoice' => $service_invoice,
+
+            'admin_name' => $this->session->userdata('admin_name'),
 
             'his_name' => $his_name,
 
@@ -2045,11 +1276,7 @@ class Service extends CI_Controller
 
         ];
 
-        $where_arr = [
-
-            'service_invoice' => $service_invoice
-
-        ];
+        $res = $this->Function_model->updateData('tbl_calendar', $where_arr, ['color' => '#ffcca0']);
 
         $res = $this->Function_model->updateData('tbl_service', $where_arr, $data_arr);
 
@@ -2060,11 +1287,11 @@ class Service extends CI_Controller
         if ($res == TRUE) {
 
             if ($his_name == 'Edit Customer') {
-                $this->notify_line($service_invoice, 'Edit', 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
-                $this->notify_email($service_invoice, 'Edit', 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
+                $this->Function_model->notify_line($service_invoice, 'Edit', 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
+                $this->Function_model->notify_email($service_invoice, 'Edit', 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
             } else {
-                $this->notify_line($service_invoice, $engineer, 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
-                $this->notify_email($service_invoice, $engineer, 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
+                $this->Function_model->notify_line($service_invoice, $engineer, 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
+                $this->Function_model->notify_email($service_invoice, $engineer, 'มีการตีกลับข้อมูลเพื่อแก้ไข กรุณาตรวจสอบ');
             }
 
 
@@ -2092,583 +1319,245 @@ class Service extends CI_Controller
         }
     }
 
+    //Change Status
 
-    //verify
-
-    function confirm_verify()
+    function change_status()
     {
-
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
             show_404();
-
             exit();
         }
 
         $service_invoice = $this->input->post('service_invoice');
 
         if ($service_invoice == null) {
-
             echo json_encode([
-
                 'status' => 'ERROR',
-
-                'message' => 'No data input'
-
+                'message' => 'Invoice Not Found'
             ]);
-
-            exit();
         }
 
-        $service = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        $service_detail = $this->Function_model->fetchDataResult('tbl_service_detail', ['service_invoice' => $service_invoice]);
-
-        if ($service_detail == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ไม่มีรายการซ่อมหรือบริการ ไม่สามารถยืนยันงานบริการหรือซ่อมได้'
-
-            ]);
-
-            exit();
-        }
-
-        $data_arr = [
-
-            'service_status' => 'verify'
-
-        ];
-
-        $where_arr = [
-
+        $where_invoice = [
             'service_invoice' => $service_invoice
-
         ];
 
-        $res = $this->Function_model->updateData('tbl_service', $where_arr, $data_arr);
+        $service = $this->Function_model->getDataRow('tbl_service', $where_invoice);
 
         $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
 
-        if ($res == TRUE) {
-
-            $this->notify_line($service_invoice, $engineer, 'กรุณาตรวจสอบและยืนยันข้อมูล');
-
-            $this->notify_email($service_invoice, $engineer, 'กรุณาตรวจสอบและยืนยันข้อมูล');
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'ยืนยันการส่งซ่อมเรียบร้อยแล้ว'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ยืนยันไม่สำเร็จ กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
-
-    //Approve
-
-    function confirm_check()
-    {
-
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No data input'
-
-            ]);
-
-            exit();
-        }
-
-        $service = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        $service_detail = $this->Function_model->fetchDataResult('tbl_service_detail', ['service_invoice' => $service_invoice]);
-
-        if ($service_detail == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ไม่มีรายการซ่อมหรือบริการ ไม่สามารถยืนยันงานบริการหรือซ่อมได้'
-
-            ]);
-
-            exit();
-        }
-
-        $data_arr = [
-
-            'service_status' => 'approve'
-
-        ];
-
-        $where_arr = [
-
-            'service_invoice' => $service_invoice
-
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', $where_arr, $data_arr);
-
-        if ($res == TRUE) {
-
-            $this->notify_line($service_invoice, '', 'ต้องการ การApprove Order');
-
-            $this->notify_email($service_invoice, '', 'ต้องการ การApprove Order');
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'ยืนยันการส่งซ่อมเรียบร้อยแล้ว'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ยืนยันไม่สำเร็จ กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
-
-    //ยืนยันการแจ้งซ่อม
-
-    function confirm_fix()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No data input'
-
-            ]);
-
-            exit();
-        }
-
-        $service_detail = $this->Function_model->fetchDataResult('tbl_service_detail', ['service_invoice' => $service_invoice]);
-
-        if ($service_detail == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ไม่มีรายการซ่อมหรือบริการ ไม่สามารถยืนยันงานบริการหรือซ่อมได้'
-
-            ]);
-
-            exit();
-        }
-
-        $data_arr = [
-
-            'service_status' => 'wait',
-
-            'approve_date' => date("Y-m-d h:i:sa")
-
-        ];
-
-        $where_arr = [
-
-            'service_invoice' => $service_invoice
-
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', $where_arr, $data_arr);
-
-        $engineer = $this->Function_model->fetchDataResult('tbl_engineer', $where_arr);
-
-        if ($res == TRUE) {
-
-            $this->notify_line($service_invoice, $engineer, 'กำลังดำเนินการติดตั้ง');
-
-            $this->notify_email($service_invoice, $engineer, 'กำลังดำเนินการติดตั้ง');
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'ยืนยันการส่งซ่อมเรียบร้อยแล้ว'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ยืนยันไม่สำเร็จ กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
-
-    //ยืนยันการซ่อมเสร็จแล้ว
-
-    function confirm_fixed()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice =  $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No data input'
-
-            ]);
-
-            exit();
-        }
-
-        $res = $this->Function_model->updateData('tbl_service', ['service_invoice' => $service_invoice], ['service_status' => 'fixed']);
-
-        $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
-
-        if ($res == TRUE) {
-
-            $this->notify_line($service_invoice, $engineer, 'ติดตั้งเสร็จเรียบร้อย');
-
-            $this->notify_email($service_invoice, $engineer, 'ติดตั้งเสร็จเรียบร้อย');
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'ยืนยันการซ่อมเสร็จ เรียบร้อยแล้ว'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'มีบางอย่างผิดพลาด กรุณาทำรายการอีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
-    //ยืนยันการแจ้งซ่อม
-
-    function uninstall()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No data input'
-
-            ]);
-
-            exit();
-        }
-
-        $service_detail = $this->Function_model->fetchDataResult('tbl_service_detail', ['service_invoice' => $service_invoice]);
-
-        if ($service_detail == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ไม่มีรายการซ่อมหรือบริการ ไม่สามารถยืนยันงานบริการหรือซ่อมได้'
-
-            ]);
-
-            exit();
-        }
-
-        $data_arr = [
-
-            'service_status' => 'uninstall'
-
-        ];
-
-        $where_arr = [
-
-            'service_invoice' => $service_invoice
-
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', $where_arr, $data_arr);
-
-        $engineer = $this->Function_model->fetchDataResult('tbl_engineer', $where_arr);
-
-        if ($res == TRUE) {
-
-            $this->notify_line($service_invoice, $engineer, 'รอการอนุมัติ ถอนการติดตั้ง');
-
-            $this->notify_email($service_invoice, $engineer, 'รอการอนุมัติ ถอนการติดตั้ง');
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'ยืนยันการส่งซ่อมเรียบร้อยแล้ว'
-
-            ]);
-            curl_close($chOne);
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'ยืนยันไม่สำเร็จ กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
-    //ยืนยันรับรถ
-
-    function confirm_pick_car()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        if ($service_invoice == null) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No Data Input'
-
-            ]);
-
-            exit();
-        }
-
-
-
-        $data_arr = [
-
-            'ves_maintenance' => 'Uninstall',
-
-            'service_status' => 'done'
-
-        ];
-
-        $res = $this->Function_model->updateData('tbl_service', ['service_invoice' => $service_invoice], $data_arr);
-
-        $engineer = $this->Function_model->fetchDataResult('tbl_engineer', ['service_invoice' => $service_invoice]);
-
-        if ($res == TRUE) {
-
-            $this->notify_line($service_invoice, $engineer, 'กำลังถอนการติดตั้ง');
-
-            $this->notify_email($service_invoice, $engineer, 'กำลังถอนการติดตั้ง');
-
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'message' => 'ยืนยันการรับรถเรียบร้อยแล้ว'
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'มีบางอย่างผิดพลาด กรุณาทำรายการใหม่อีกครั้ง'
-
-            ]);
-
-            exit();
-        }
-    }
-
-    function notify_line($service_invoice, $engineer, $message)
-    {
-        $token = "aOQ43KJ6pn623siACkh3zbCtRtxrGB32mVe4WeLLCke"; // Line Notify Support
-        //$token = "Wq0HPXFx0ou0TIVDHCX0KztKNRq5daZeSejEmZ0YqXQ"; // Line Notify Test
-        //Message
-        $mymessage = "Job Order : $service_invoice \n"; //Set new line with '\n'
-        $mymessage .= "$message \n";
-        $mymessage .= "support.shipexpert.info/pages/service_detail/$service_invoice \n";
-
-        if ($engineer == '') {
-            $mymessage .= "Management : MR. Kirk Vilaimal";
-        } else if ($engineer == 'Edit') {
-            $mymessage .= "Admin : PhornPhen Saksirisamphun";
-        } else {
-            $mymessage .= "Engineer :";
-            $i = 1;
-            foreach ($engineer as $item) {
-                $mymessage .= "$item->engineer ";
-                if ($i < count($engineer)) {
-                    $mymessage .= ",";
-                    $i++;
+        $admin_name = $this->session->userdata('admin_name');
+
+        $data_service = $data_notify = $subject = $data_calendar = $data_eqp = '';
+
+        if ($service->service_status == 'created') { // Save
+            $data_service = [
+                'service_status' => 'verify',
+                'user_update' => $admin_name
+            ];
+            $data_notify = [
+                'service_status' => 'verify',
+                'user_save' => $admin_name,
+                'save_date' => date('Y-m-d H:i:s')
+            ];
+            if ($service->ves_maintenance == 'Uninstall') {
+                $subject = 'ตรวจสอบข้อมูลการรื้อถอน';
+            } else {
+                $subject = 'ตรวจสอบข้อมูลการติดตั้ง';
+            }
+        } else if ($service->service_status == 'verify') {  // Verify
+            $data_service = [
+                'service_status' => 'approve',
+                'user_update' => $admin_name
+            ];
+            $data_notify = [
+                'service_status' => 'approve',
+                'user_verify' => $admin_name,
+                'verify_date' => date('Y-m-d H:i:s')
+            ];
+            if ($service->ves_maintenance == 'Uninstall') {
+                $subject = 'รออนุญาติเพื่อทำการรื้อถอน';
+            } else if ($service->ves_installation == 'true') {
+                $subject = 'รออนุญาติเพื่อทำการติดตั้ง';
+            } else {
+                $subject = 'รออนุญาติเพื่อทำการซ่อมบำรุง';
+            }
+        } else if ($service->service_status == 'approve') { // Approve
+            $data_service = [
+                'service_status' => 'wait',
+                'approve_date' => date('Y-m-d H:i:s'),
+                'user_update' => $admin_name
+            ];
+            $data_notify = [
+                'service_status' => 'wait',
+                'user_approve' => $admin_name,
+                'approve_date' => date('Y-m-d H:i:s')
+            ];
+            $data_calendar = [
+                'color' => '#ffa500'  // danger #ff0000 , warning #ffa500 , success #3cb371 , created #ffcca0
+            ];
+            if ($service->ves_maintenance == 'Uninstall') {
+                $subject = 'กำลังทำการรื้อระบบ';
+            } else {
+                $subject = 'กำลังทำการติดตั้งระบบ';
+            }
+        } else if ($service->service_status == 'wait') { // Wait
+            $data_service = [
+                'service_status' => 'fixed',
+                'user_update' => $admin_name
+            ];
+            $data_notify = [
+                'service_status' => 'fixed',
+                'user_inprogress' => $admin_name,
+                'inprogress_date' => date('Y-m-d H:i:s')
+            ];
+            $data_calendar = [
+                'color' => '#3cb371' // danger #ff0000 , warning #ffa500 , success #3cb371 , created #ffcca0
+            ];
+            $data_eqp = [
+                'fleet' => $service->ves_fleet,
+                'vessel' => $service->ves_name,
+                'type' => $service->ves_type,
+                'installation_date' => $service->due_date,
+                'complete_date' => $service->end_date,
+            ];
+            if ($service->ves_maintenance == 'Uninstall') {
+                $subject = 'ทำการรื้อถอนระบบเรียบร้อย';
+            } else {
+                $subject = 'ทำการติดตั้งระบบเรียบร้อย';
+            }
+        } else if ($service->service_status == 'fixed') { // Fixed
+            $data_service = [
+                'service_status' => ''
+            ];
+            $data_notify = [
+                'service_status' => '',
+                'user_complete' => $admin_name,
+                'complete_date' => date('Y-m-d H:i:s')
+            ];
+            $data_calendar = [
+                'color' => '#ff0000' // danger #ff0000 , warning #ffa500 , success #3cb371 , created #ffcca0
+            ];
+            if ($service->ves_installation == 'true') {
+                $package = $this->Function_model->fetchDataResult('tbl_service_package', $where_invoice);
+                $product = $this->Function_model->fetchDataResult('tbl_service_product', $where_invoice);
+                $service->service_invoice = $this->Function_model->genInvoice();
+                foreach ($engineer as $item) {
+                    $item->id = '';
+                    $item->service_invoice = $service->service_invoice;
+                    $this->Function_model->insertData('tbl_engineer', $item);
+                }
+                foreach ($package as $item) {
+                    $item->id = '';
+                    $item->service_invoice = $service->service_invoice;
+                    $this->Function_model->insertData('tbl_service_package', $item);
+                }
+                foreach ($product as $item) {
+                    $item->id = '';
+                    $item->service_invoice = $service->service_invoice;
+                    $this->Function_model->insertData('tbl_service_product', $item);
+                }
+                $data_new_calendar = [
+                    'service_invoice' => $service->service_invoice,
+                    'due_date' => $service->due_date,
+                    'end_date' => $service->end_date,
+                    'title' => $service->service_invoice,
+                    'descript' => $service->ves_name,
+                    'color' => '#ffcca0'
+                ];
+                $data_new_notify = [
+                    'service_invoice' => $service->service_invoice,
+                    'service_status' => 'created',
+                    'user_created' => $admin_name,
+                    'create_date' => date('Y-m-d H:i:s')
+                ];
+                $this->Function_model->insertData('tbl_service', $service);
+                $this->Function_model->insertData('tbl_calendar', $data_new_calendar);
+                $this->Function_model->insertData('tbl_notify', $data_new_notify);
+                $data_new_service = [
+                    'his_count' => 0,
+                    'service_status' => 'verify',
+                    'user_created' => $admin_name,
+                    'ves_maintenance' => 'Uninstall',
+                    'ves_installation' => 'false',
+                    'ves_survey' => 'false'
+                ];
+                $this->Function_model->updateData('tbl_service', ['service_invoice' => $service->service_invoice], $data_new_service);
+                $this->Function_model->insertData('tbl_service_link', ['from_invoice' => $service_invoice, 'to_invoice' => $service->service_invoice, 'mode_work' => 'Uninstall']);
+
+                $subject = 'ตรวจสอบข้อมูลการรื้อถอน';
+            } else {
+                if ($service->ves_maintenance == 'Uninstall') {
+                    $subject = 'ปิดงานรื้อถอนระบบบนเรือ';
+                } else if ($service->ves_survey == 'true') {
+                    $subject = 'ปิดงานสำรวจพื้นที่เรือ';
+                } else {
+                    $subject = 'ปิดงานซ่อมบำรุงระบบบนเรือ';
                 }
             }
         }
-        $data = array(
-            'message' => $mymessage,
-        );
-        $chOne = curl_init();
-        curl_setopt($chOne, CURLOPT_URL, "https://notify-api.line.me/api/notify");
-        curl_setopt($chOne, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($chOne, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($chOne, CURLOPT_POST, 1);
-        curl_setopt($chOne, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($chOne, CURLOPT_FOLLOWLOCATION, 1);
-        $headers = array('Method: POST', 'Content-type: multipart/form-data', 'Authorization: Bearer ' . $token,);
-        curl_setopt($chOne, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($chOne, CURLOPT_RETURNTRANSFER, 1);
-        $result = curl_exec($chOne);
-        //Check error
-        if (curl_error($chOne)) {
-            echo 'error:' . curl_error($chOne);
-        } else {
-            $result_ = json_decode($result, true);
-        }
-    }
-
-    function notify_email($service_invoice, $engineer, $subject)
-    {
-        $data['service'] = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
-
-        $data['engineer'] = $engineer;
-
-        $mail = new PHPMailer();
-
-
-        $mail->CharSet = "utf-8";
-        $mail->isSMTP(); // Set mailer to use SMTP
-        $mail->SMTPAuth = true; // Enable smtp authentication
-        $mail->SMTPSecure = 'ssl'; // Enable "tls" encryption, "ssl" also accepted
-        $mail->Host = "cat167-26.static.lnwhostname.com"; // SMTP server "smtp.yourdomain.com" หรือ TLS/SSL : hostname By Nakhonitech : "xxx.nakhonitech.com"
-        $mail->Port = 465; // พอร์ท SMTP 25 / SSL: 465 or 587 / TLS: 587
-        $mail->Username = "dev_it@innostellar.com"; // account SMTP
-        $mail->Password = ".ljvtwidHwfh1152"; // รหัสผ่าน SMTP
-
-        $mail->SetFrom("dev_it@innostellar.com", "Job Order");
-        $mail->AddReplyTo("dev_it@innostellar.com", "Job Order");
-        $mail->Subject = "$subject" . "$service_invoice";
-        $body = $this->load->view('print/service_notify_email', $data, true);
-        $mail->MsgHTML($body);
-
-        if ($engineer == '') {
-            //$mail->AddAddress("kirk@shipexpert.net", "MR.Kirk Vilaimal"); // ผู้รับคนที่หนึ่ง
-        } else if ($engineer == 'Edit') {
-            //$mail->AddAddress("phornphen@shipexpert.net", "K.Phornphen Saksirisamphun"); // ผู้รับคนที่หนึ่ง
-        } else {
-            foreach ($engineer as $item) {
-                $engin = str_split($item->engineer);
-                $empty = strpos($item->engineer, ' ');
-                $name = "";
-                for ($count = 0; $count < $empty; $count++) {
-                    $name = $name . $engin[$count];
+        if ($data_eqp != null) {
+            $product = $this->Function_model->fetchDataResult('tbl_service_product', ['service_invoice' => $service_invoice]);
+            foreach ($product as $index) {
+                if (strtoupper($index->product) == strtoupper('voip')) {
+                    $data_eqp .= ['voip' => 'Yes'];
+                } else if (strtoupper($index->product) == strtoupper('cctv')) {
+                    $data_eqp .= ['cctv' => date('Y-m-d')];
+                } else if (strtoupper($index->product) == strtoupper('tvro')) {
+                    $data_eqp .= ['tvro' => 'Yes'];
                 }
-                $mail->AddAddress("$name@shipexpert.net", "$item->engineer"); // ผู้รับคนที่หนึ่ง
+            }
+            if ($service->ves_installation == 'true') {
+                $data_eqp .= ['status' => 'On Service'];
+                $res = $this->Function_model->insertData('old_equipment', $data_eqp);
+            } else if ($service->ves_maintenance == 'Uninstall') {
+                $data_eqp .= ['status' => 'Off Service'];
+                $link = $this->Function_model->getDataRow('tbl_service_link', ['to_invoice' => $service->service_invoice]);
+                $res = $this->Function_model->updateData('old_equipment', ['service_invoice' => $link->from_invoice], $data_eqp);
             }
         }
+        if ($data_service != null) {
+            $res = $this->Function_model->updateData('tbl_service', $where_invoice, $data_service);
+        }
+        if ($data_notify != null) {
+            $res = $this->Function_model->updateData('tbl_notify', $where_invoice, $data_notify);
+        }
+        if ($data_calendar != null) {
+            $res = $this->Function_model->updateData('tbl_calendar', $where_invoice, $data_calendar);
+        }
+        if ($service_invoice == $service->service_invoice) {
+            $res = $this->Function_model->getDataRow('tbl_service', $where_invoice);
+        } else {
+            $res = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service->service_invoice]);
+        }
 
-        $mail->send();
+        if ($res == true) {
+
+            if ($service_invoice == $service->service_invoice) {
+                $this->Function_model->notify_line($service_invoice, $engineer, $subject);
+
+                $this->Function_model->notify_email($service_invoice, $engineer, $subject);
+            } else {
+                $this->Function_model->notify_line($service->service_invoice, $engineer, $subject);
+
+                $this->Function_model->notify_email($service->service_invoice, $engineer, $subject);
+            }
+
+
+
+            echo json_encode([
+                'status' => 'SUCCESS',
+                'message' => 'Save Data Success',
+                'invoice' => $res->service_invoice
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'SUCCESS',
+                'message' => 'Can\'t Save Data'
+            ]);
+        }
     }
 
-    //ยกเลิกรับงานซ่อม
+    //Delete Service
 
     function cancel_service()
     {
@@ -2807,6 +1696,8 @@ class Service extends CI_Controller
             $this->Function_model->deleteData('tbl_uploads_back', ['service_invoice' => $service_invoice]);
         }
 
+        $this->Function_model->deleteData('tbl_calendar', ['service_invoice' => $service_invoice]);
+
         //ตรวจสอบในตาราง tbl_service_detail ถ้ามีให้ทำการลบข้อมูล
 
         $service_detail = $this->Function_model->fetchDataResult('tbl_service_detail', ['service_invoice' => $service_invoice]);
@@ -2845,9 +1736,9 @@ class Service extends CI_Controller
 
         //ตรวจสอบในตาราง tbl_service_package ถ้ามีให้ทำการลบข้อมูล
 
-        $projects = $this->Function_model->fetchDataResult('tbl_service_package', ['service_invoice' => $service_invoice]);
+        $package = $this->Function_model->fetchDataResult('tbl_service_package', ['service_invoice' => $service_invoice]);
 
-        if ($projects != null) {
+        if ($package != null) {
 
             $this->Function_model->deleteData('tbl_service_package', ['service_invoice' => $service_invoice]);
         }
@@ -2885,9 +1776,9 @@ class Service extends CI_Controller
 
         if ($res == TRUE) {
 
-            $this->notify_line($service_invoice, $engineer, 'ถูกลบออกจากระบบ');
+            $this->Function_model->notify_line($service_invoice, $engineer, 'ถูกลบออกจากระบบ');
 
-            $this->notify_email($service_invoice, $engineer, 'ถูกลบออกจากระบบ');
+            $this->Function_model->notify_email($service_invoice, $engineer, 'ถูกลบออกจากระบบ');
 
             echo json_encode([
 
@@ -2911,804 +1802,6 @@ class Service extends CI_Controller
             exit();
         }
     }
-
-    function create_atp()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-
-            exit();
-        }
-
-        $service_invoice = $this->input->post('service_invoice');
-
-        $page6_11 = $this->input->post('page6_11');
-
-        $page6_12 = $this->input->post('page6_12');
-
-        $page6_13 = $this->input->post('page6_13');
-
-        $page6_21 = $this->input->post('page6_21');
-
-        $page6_31 = $this->input->post('page6_31');
-
-        $page6_32 = $this->input->post('page6_32');
-
-        $page6_41 = $this->input->post('page6_41');
-
-        $page7_41 = $this->input->post('page7_41');
-
-        $remark_page6 = $this->input->post('remark_page6');
-
-        $add_info = $this->input->post('add_info');
-
-        $mac_page7 = $this->input->post('mac_page7');
-
-        $type_page7 = $this->input->post('type_page7');
-
-        $email_page7 = $this->input->post('email_page7');
-
-        $website_page7 = $this->input->post('website_page7');
-
-        $download = $this->input->post('download');
-
-        $upload = $this->input->post('upload');
-
-        $version = $this->input->post('version');
-
-        $date = $this->input->post('date');
-
-        $author = $this->input->post('author');
-
-        $detail = $this->input->post('detail');
-
-        $count = $this->input->post('count');
-
-        $file_network = $_FILES['files_network'];
-
-        $file_app_a = $_FILES['files_app_a'];
-
-        $file_app_b = $_FILES['files_app_b'];
-
-        $file_app_c = $_FILES['files_app_c'];
-
-        if (
-            $remark_page6 == NULL || $download == NULL || $upload == NULL || $add_info == NULL || $page6_11 == NULL || $page6_12 == NULL || $page6_13 == NULL ||
-            $page6_21 == NULL || $page6_31 == NULL || $page6_32 == NULL || $page6_41 == NULL || $page7_41 == NULL
-        ) {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'No Data Input'
-
-            ]);
-
-            exit();
-        }
-
-        $data = [
-            'service_invoice' => $service_invoice,
-            'page6_11' => $page6_11,
-            'page6_12' => $page6_12,
-            'page6_13' => $page6_13,
-            'page6_21' => $page6_21,
-            'page6_31' => $page6_31,
-            'page6_32' => $page6_32,
-            'page6_41' => $page6_41,
-            'page7_41' => $page7_41,
-            'download' => $download,
-            'upload' => $upload,
-            'remark_page6_11' => $remark_page6,
-            'additional' => $add_info,
-            'mac_address' => $mac_page7,
-            'type_device' => $type_page7,
-            'email' => $email_page7,
-            'website' => $website_page7,
-
-        ];
-
-        $res = $this->Function_model->insertData('tbl_atp_detail', $data);
-
-        for ($num = 0; $num < ($count - 1); $num++) {
-
-            $data = [
-                'service_invoice' => $service_invoice,
-                'engineer' => $author[$num],
-                'version' => $version[$num],
-                'his_date' => $date[$num],
-                'his_detail' => $detail[$num]
-            ];
-
-            $res = $this->Function_model->insertData('tbl_atp_history', $data);
-        }
-
-        foreach ($file_network['name'] as $index => $name) {
-
-            $filename = $name;
-            $fileTmp = $file_network['tmp_name'][$index];
-            $filePath = "upload_atp/" . $service_invoice . "/network//" . $name;
-
-            $check = $this->Function_model->fetchDataResult('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'page' => 'page4']);
-
-            if (count($check) > 0) {
-                $data = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'uploads_tmp' => $fileTmp,
-                    'page' => 'page4'
-                ];
-                $where = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'page' => 'page4'
-                ];
-
-                $res = $this->Function_model->updateData('tbl_atp_upload', $where, $data);
-            } else {
-                move_uploaded_file($fileTmp, $filePath);
-
-                $res = $this->Function_model->insertData('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'uploads_tmp' => $fileTmp, 'page' => 'page4']);
-            }
-        }
-
-        foreach ($file_app_a['name'] as $index => $name) {
-            $filename = $name;
-            $fileTmp = $file_app_a['tmp_name'][$index];
-            $filePath = "upload_atp/" . $service_invoice . "/app_a//" . $name;
-
-            $check = $this->Function_model->fetchDataResult('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'page' => 'page10']);
-
-            if (count($check) > 0) {
-                $data = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'uploads_tmp' => $fileTmp,
-                    'page' => 'page10'
-                ];
-                $where = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'page' => 'page10'
-                ];
-
-                $res = $this->Function_model->updateData('tbl_atp_upload', $where, $data);
-            } else {
-                move_uploaded_file($fileTmp, $filePath);
-
-                $res = $this->Function_model->insertData('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'uploads_tmp' => $fileTmp, 'page' => 'page10']);
-            }
-        }
-
-        foreach ($file_app_b['name'] as $index => $name) {
-            $filename = $name;
-            $fileTmp = $file_app_b['tmp_name'][$index];
-            $filePath = "upload_atp/" . $service_invoice . "/app_b//" . $name;
-
-            $check = $this->Function_model->fetchDataResult('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'page' => 'page11']);
-
-            if (count($check) > 0) {
-                $data = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'uploads_tmp' => $fileTmp,
-                    'page' => 'page11'
-                ];
-                $where = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'page' => 'page11'
-                ];
-
-                $res = $this->Function_model->updateData('tbl_atp_upload', $where, $data);
-            } else {
-                move_uploaded_file($fileTmp, $filePath);
-
-                $res = $this->Function_model->insertData('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'uploads_tmp' => $fileTmp, 'page' => 'page11']);
-            }
-        }
-
-        foreach ($file_app_c['name'] as $index => $name) {
-            $filename = $name;
-            $fileTmp = $file_app_c['tmp_name'][$index];
-            $filePath = "upload_atp/" . $service_invoice . "/app_c//" . $name;
-
-            $check = $this->Function_model->fetchDataResult('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'page' => 'page12']);
-
-            if (count($check) > 0) {
-                $data = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'uploads_tmp' => $fileTmp,
-                    'page' => 'page12'
-                ];
-                $where = [
-                    'service_invoice' => $service_invoice,
-                    'uploads_name' => $filename,
-                    'page' => 'page12'
-                ];
-
-                $res = $this->Function_model->updateData('tbl_atp_upload', $where, $data);
-            } else {
-                move_uploaded_file($fileTmp, $filePath);
-
-                $res = $this->Function_model->insertData('tbl_atp_upload', ['service_invoice' => $service_invoice, 'uploads_name' => $filename, 'uploads_tmp' => $fileTmp, 'page' => 'page12']);
-            }
-        }
-
-        if ($res == true) {
-            echo json_encode([
-
-                'status' => 'SUCCESS',
-
-                'service_invoice' => $service_invoice
-
-            ]);
-
-            exit();
-        } else {
-
-            echo json_encode([
-
-                'status' => 'ERROR',
-
-                'message' => 'Create ATP Fail!'
-
-            ]);
-
-            exit();
-        }
-    }
-
-    function print_atp()
-    {
-
-        $service_invoice = $this->input->get('invoice');
-
-        $where_arr = ['service_invoice' => $service_invoice];
-
-        $service = $this->Function_model->getDataRow('tbl_service', $where_arr);
-
-
-        if ($service == null) {
-
-            echo 'ไม่มีรายการนี้อยู่ในระบบ';
-
-            exit();
-        }
-
-        $this->Function_model->updateData('tbl_service', $where_arr, ['atp_create' => 'created']);
-
-
-        $data['title'] = 'ATP Report ' . $service_invoice;
-
-        $data['service'] = $service;
-
-        $data['engineer'] = $this->Function_model->getDataRow('tbl_engineer', $where_arr);
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', $where_arr);
-
-        $data['atp_history'] = $this->Function_model->fetchDataResult('tbl_atp_history', $where_arr);
-
-        $data['atp_detail'] = $this->Function_model->getDataRow('tbl_atp_detail', $where_arr);
-
-        $data['atp_upload'] = $this->Function_model->fetchDataResult('tbl_atp_upload', $where_arr);
-
-        $data['service_package'] = $this->Function_model->fetchDataResult('tbl_service_package', $where_arr);
-
-        $data['service_project'] = $this->Function_model->fetchDataResult('tbl_service_project', $where_arr);
-
-        $data['service_product'] = $this->Function_model->fetchDataResult('tbl_service_product', $where_arr);
-
-        $data['service_detail'] = $this->Function_model->fetchDataResult('tbl_service_detail', $where_arr);
-
-        $html = $this->load->view('print/service_atp', $data, true);
-
-
-        $mpdf = new \Mpdf\Mpdf([
-
-            'setAutoTopMargin' => 'stretch',
-
-            'mode' => '',
-
-            'format' => 'A4',
-
-            'margin_left' => 10,
-
-            'margin_right' => 10,
-
-            'margin_top' => 5,
-
-            'margin_bottom' => 5,
-
-            'margin_header' => 0,
-
-            'margin_footer' => 0,
-
-            'orientation' => 'P',
-
-            'mode' => 'utf-8',
-
-            'default_font_size' => 14,
-
-            'default_font' => 'sarabun'
-
-        ]);
-
-        $mpdf->useFixedNormalLineHeight = false;
-
-        $mpdf->useFixedTextBaseline = false;
-
-        $mpdf->adjustFontDescLineheight = 1;
-
-        $mpdf->SetHeader(
-            '<div>{PAGENO}</div> 
-        <table class="tableheader">
-            <tr>
-                <td style=""><img src="https://support.shipexpert.info/assets/img/logo.png" alt="" style="max-width: 150px;"></td>
-                <td style=""><strong>Shipexpert Co.,Ltd Final Acceptance Test</strong></td>
-            </tr>
-        </table>'
-        );
-
-        $mpdf->SetFooter('Job Order : ' . $service_invoice . '     ');
-
-        $mpdf->WriteHTML($html);
-
-        $mpdf->Output($data['title'] . '.pdf', 'I');
-    }
-
-
-
-    //ปริ้นใบแจ้งซ่อม ใบเสร็จ
-
-    function print_job()
-    {
-
-        $service_invoice = $this->input->get('invoice');
-
-        $where_arr = ['service_invoice' => $service_invoice];
-
-        $service = $this->Function_model->getDataRow('tbl_service', $where_arr);
-
-
-        if ($service == null) {
-
-            echo 'ไม่มีรายการนี้อยู่ในระบบ';
-
-            exit();
-        }
-
-
-
-        $data['title'] = 'Job Order ' . $service_invoice;
-
-        $data['service'] = $service;
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', $where_arr);
-
-        $data['engineer'] = $this->Function_model->fetchDataResult('tbl_engineer', $where_arr);
-
-        $data['history'] = $this->Function_model->fetchDataResult('tbl_atp_history', $where_arr);
-
-        $data['service_package'] = $this->Function_model->fetchDataResult('tbl_service_package', $where_arr);
-
-        $data['service_project'] = $this->Function_model->fetchDataResult('tbl_service_project', $where_arr);
-
-        $data['service_product'] = $this->Function_model->fetchDataResult('tbl_service_product', $where_arr);
-
-        $data['uploads'] = $this->Function_model->fetchDataResult('tbl_atp_upload', $where_arr);
-
-        $data['service_detail'] = $this->Function_model->fetchDataResult('tbl_service_detail', $where_arr);
-
-        $html = $this->load->view('print/service_Job', $data, true);
-
-
-
-        $mpdf = new \Mpdf\Mpdf([
-
-            'setAutoTopMargin' => 'stretch',
-
-            'mode' => '',
-
-            'format' => 'A4',
-
-            'margin_left' => 10,
-
-            'margin_right' => 10,
-
-            'margin_top' => 5,
-
-            'margin_bottom' => 5,
-
-            'margin_header' => 0,
-
-            'margin_footer' => 0,
-
-            'orientation' => 'P',
-
-            'mode' => 'utf-8',
-
-            'default_font_size' => 14,
-
-            'default_font' => 'sarabun'
-
-        ]);
-
-        $mpdf->useFixedNormalLineHeight = false;
-
-        $mpdf->useFixedTextBaseline = false;
-
-        $mpdf->adjustFontDescLineheight = 1;
-
-        $mpdf->SetHeader(
-            '<div>{PAGENO}</div> 
-        <table class="tableheader" >
-        <tbody>
-            <tr>
-                <td rowspan="3" style="width:150px;">
-
-                    <img src="https://support.shipexpert.info/assets/img/logo.png" alt="" style="max-width: 150px;">
-
-                </td>
-                <td colspan="3" rowspan="2" style="text-align: center;">
-
-                    <h3> <strong> Job Order ' . $service_invoice . '</strong></h3>
-
-                </td>
-                <td style="padding-left: 5px;">
-
-                    from
-
-                </td>
-            </tr>
-            <tr>
-                <td style="height: 50px;width:150px;">
-
-                </td>
-            </tr>
-            <tr>
-                <td style="text-align: center;width:20%;">
-
-                </td>
-                <td style="text-align: center;width:20%;">
-
-                </td>
-                <td style="text-align: center;width:20%;">
-                Page {PAGENO} of {nb}
-                </td>
-                <td style="padding-left: 5px;">
-                    Filling no.
-                </td>
-            </tr>
-        </tbody>
-        </table>'
-        );
-
-        $mpdf->SetFooter('Job Order : ' . $service_invoice . '     ');
-
-        $mpdf->WriteHTML($html);
-
-        $mpdf->Output($data['title'] . '.pdf', 'I');
-    }
-
-
-
-    //ปริ้นใบกำกับภาษี
-
-    function print_customer()
-    {
-
-        $service_invoice = $this->input->get('invoice');
-
-        $where_arr = ['service_invoice' => $service_invoice];
-
-        $service = $this->Function_model->getDataRow('tbl_service', $where_arr);
-
-        if ($service == null) {
-
-            echo 'ไม่มีรายการนี้อยู่ในระบบ';
-
-            exit();
-        }
-
-
-
-        $data['title'] = 'Customer Acceptance Report ' . $service_invoice;
-
-        $data['service'] = $service;
-
-        $data['engineer'] = $this->Function_model->fetchDataResult('tbl_engineer', $where_arr);
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', $where_arr);
-
-        $data['service_package'] = $this->Function_model->fetchDataResult('tbl_service_package', $where_arr);
-
-        $data['service_project'] = $this->Function_model->fetchDataResult('tbl_service_project', $where_arr);
-
-        $data['service_product'] = $this->Function_model->fetchDataResult('tbl_service_product', $where_arr);
-
-        $data['service_uploads_back'] = $this->Function_model->fetchDataResult('tbl_uploads_back', $where_arr);
-
-        $data['service_detail'] = $this->Function_model->fetchDataResult('tbl_service_detail', $where_arr);
-
-        $html = $this->load->view('print/service_customer', $data, true);
-
-
-
-        $mpdf = new \Mpdf\Mpdf([
-
-            'setAutoTopMargin' => 'stretch',
-
-            'mode' => '',
-
-            'format' => 'A4',
-
-            'margin_left' => 10,
-
-            'margin_right' => 10,
-
-            'margin_top' => 5,
-
-            'margin_bottom' => 5,
-
-            'margin_header' => 0,
-
-            'margin_footer' => 0,
-
-            'orientation' => 'P',
-
-            'mode' => 'utf-8',
-
-            'default_font_size' => 14,
-
-            'default_font' => 'sarabun'
-
-        ]);
-
-        $mpdf->SetHeader(
-            '<div>{PAGENO}</div> <table class="tableheader" >
-        <tbody>
-            <tr>
-                <td rowspan="3" style="width:150px;">
-
-                    <img src="https://support.shipexpert.info/assets/img/logo.png" alt="" style="max-width: 150px;">
-
-                </td>
-                <td colspan="3" rowspan="2" style="text-align: center;">
-
-                    <h3> <strong> Customer Acceptance Report </strong></h3>
-
-                </td>
-                <td style="padding-left: 5px;">
-
-                    from
-
-                </td>
-            </tr>
-            <tr>
-                <td style="height: 50px;width:150px;">
-
-                </td>
-            </tr>
-            <tr>
-                <td>
-
-                </td>
-                <td>
-
-                </td>
-                <td style="text-align: center;width:20%;">
-                Page {PAGENO} of {nb}
-                </td>
-                <td style="padding-left: 5px;">
-                    Filling no.
-                </td>
-            </tr>
-        </tbody>
-        </table>'
-        );
-
-        $mpdf->SetFooter('Job Order : ' . $service_invoice . '     ');
-
-        $mpdf->WriteHTML($html);
-
-        $mpdf->Output($data['title'] . '.pdf', 'I');
-    }
-
-    function print_pms()
-    {
-
-        $id = $this->input->get('id');
-
-        $rec = $this->input->get('pms');
-
-        $where_arr = ['id' => $id];
-
-        $service = $this->Function_model->getDataRow('tbl_pms_job', $where_arr);
-
-        if ($service == null) {
-
-            echo 'ไม่มีรายการนี้อยู่ในระบบ';
-
-            exit();
-        }
-
-        $data['title'] = $rec . 'Report';
-
-        $data['service'] = $service;
-
-        $html = $this->load->view('print/report/service_' . $rec, $data, true);
-
-        $mpdf = new \Mpdf\Mpdf([
-
-            'setAutoTopMargin' => 'stretch',
-
-            'mode' => '',
-
-            'format' => 'A4',
-
-            'margin_left' => 10,
-
-            'margin_right' => 10,
-
-            'margin_top' => 5,
-
-            'margin_bottom' => 5,
-
-            'margin_header' => 0,
-
-            'margin_footer' => 0,
-
-            'orientation' => 'P',
-
-            'mode' => 'utf-8',
-
-            'default_font_size' => 14,
-
-            'default_font' => 'sarabun'
-
-        ]);
-
-        $mpdf->SetHeader(
-            '<div>{PAGENO}</div> 
-        <table class="tableheader" >
-        <tbody>
-            <tr>
-                <td rowspan="3" style="width:150px;">
-
-                    <img src="https://support.shipexpert.info/assets/img/logo.png" alt="" style="max-width: 150px;">
-
-                </td>
-                <td colspan="3" rowspan="2" style="text-align: center;">
-
-                    <h3> <strong> Preventive Maintenance Report </strong></h3>
-
-                </td>
-                <td style="padding-left: 5px;">
-
-                    from
-
-                </td>
-            </tr>
-            <tr>
-                <td style="height: 50px;width:150px;">
-
-                </td>
-            </tr>
-            <tr>
-                <td style="text-align: center;width:20%;">
-                <h4> ' . $service->pms_invoice . '</h4>
-                </td>
-                <td style="text-align: center;width:20%;">
-
-                </td>
-                <td style="text-align: center;width:20%;">
-                Page {PAGENO} of {nb}
-                </td>
-                <td style="padding-left: 5px;">
-                    Filling no.
-                </td>
-            </tr>
-        </tbody>
-        </table>'
-        );
-
-
-        $mpdf->useFixedNormalLineHeight = false;
-
-        $mpdf->useFixedTextBaseline = false;
-
-        $mpdf->adjustFontDescLineheight = 1;
-
-        $mpdf->WriteHTML($html);
-
-        $mpdf->Output($data['title'] . '.pdf', 'I');
-    }
-
-    function print_report()
-    {
-
-        $service_invoice = $this->input->get('invoice');
-
-        $rec = $this->input->get('pms');
-
-        $where_arr = ['service_invoice' => $service_invoice];
-
-        $service = $this->Function_model->getDataRow('tbl_service', $where_arr);
-
-        if ($service == null) {
-
-            echo 'ไม่มีรายการนี้อยู่ในระบบ';
-
-            exit();
-        }
-
-        $data['title'] = $rec . $service_invoice;
-
-        $data['service'] = $service;
-
-        $data['vessel'] = $this->Function_model->fetchDataResult('tbl_vessel_name', $where_arr, 'id', 'ASC');
-
-        $data['report'] = $this->Function_model->getDataRow('tbl_report_' . $rec, $where_arr);
-
-        $html = $this->load->view('print/report/service_' . $rec, $data, true);
-
-        $mpdf = new \Mpdf\Mpdf([
-
-            'setAutoTopMargin' => 'stretch',
-
-            'mode' => '',
-
-            'format' => 'A4',
-
-            'margin_left' => 10,
-
-            'margin_right' => 10,
-
-            'margin_top' => 5,
-
-            'margin_bottom' => 5,
-
-            'margin_header' => 0,
-
-            'margin_footer' => 0,
-
-            'orientation' => 'P',
-
-            'mode' => 'utf-8',
-
-            'default_font_size' => 14,
-
-            'default_font' => 'sarabun'
-
-        ]);
-
-        $mpdf->useFixedNormalLineHeight = false;
-
-        $mpdf->useFixedTextBaseline = false;
-
-        $mpdf->adjustFontDescLineheight = 1;
-
-        $mpdf->SetFooter('Job Order : ' . $service_invoice . '     ');
-
-        $mpdf->WriteHTML($html);
-
-        $mpdf->Output($data['title'] . '.pdf', 'I');
-    }
-
-    //genarate invoice
-
-    function gen_invoice()
-    {
-
-        echo $this->Function_model->genInvoice();
-    }
-
-
 
     //ค้นหาใบส่งซ่อม
 
@@ -3760,102 +1853,21 @@ class Service extends CI_Controller
         }
     }
 
-
-
-    //จำนวนรายการที่ต่างๆ
+    // Get Amount for Dashboard
 
     function get_service_amount()
     {
 
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
             show_404();
             exit();
         }
 
-        $amount_all_service = count($this->Function_model->fetchDataResult('tbl_service'));
-
-        $amount_service_approve = count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'approve']));
-
-        $amount_service_wait = count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'wait']));
-
-        $amount_service_fixed = count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'fixed']));
-
-        $amount_customer = count($this->Function_model3->fetchDataResult('customers'));
-
         echo json_encode([
-
             'status' => 'SUCCESS',
-
-            'amount_all_service' => number_format($amount_all_service),
-
-            'amount_service_approve' => number_format($amount_service_approve),
-
-            'amount_service_wait' => number_format($amount_service_wait),
-
-            'amount_service_fixed' => number_format($amount_service_fixed),
-
-            'amount_customer' => number_format($amount_customer)
-
-
-
-        ]);
-        exit();
-    }
-
-
-
-    /****************************************** */
-
-    //              Side Bar
-
-    /****************************************** */
-
-    function sidebar_status()
-    {
-
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-
-            show_404();
-            exit();
-        }
-
-        echo json_encode([
-
-            'service' => count($this->Function_model->fetchDataResult('tbl_service', '', '', '')),
-
-            'service_created' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'created'])),
-
-            'service_verify' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'verify'])),
-
-            'service_approve' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'approve'])),
-
-            'service_wait' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'wait'])),
-
-            'service_fixed' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'fixed'])),
-
-            'service_uninstall' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'uninstall'])),
-
-            'service_done' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'done'])),
-
-            'pms' => count($this->Function_model->fetchDataResult('tbl_service', ['pms' => '1'])),
-
-            'vsat' => count($this->Function_model->fetchDataResult('tbl_service', ['vsat' => '1'])),
-
-            'cctv' => count($this->Function_model->fetchDataResult('tbl_service', ['cctv' => '1'])),
-
-            'tvro' => count($this->Function_model->fetchDataResult('tbl_service', ['tvro' => '1'])),
-
-            'voip' => count($this->Function_model->fetchDataResult('tbl_service', ['voip' => '1'])),
-
-            'port' => count($this->Function_model->fetchDataResult('tbl_port', '')),
-
-            'package' => count($this->Function_model->fetchDataResult('tbl_package', '')),
-
-            'contact' => count($this->Function_model->fetchDataResult('tbl_contact', '')),
-
-            'user' => count($this->Function_model->fetchDataResult('tbl_admin', '')),
-
+            'amount_all_service' => count($this->Function_model->fetchDataResult('tbl_service')),
+            'amount_service_wait' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'wait'])),
+            'amount_service_fixed' => count($this->Function_model->fetchDataResult('tbl_service', ['service_status' => 'fixed']))
         ]);
         exit();
     }

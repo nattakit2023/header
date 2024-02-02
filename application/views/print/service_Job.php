@@ -44,7 +44,7 @@
         }
 
         .tableheader td {
-            border: 1px solid #333;  
+            border: 1px solid #333;
         }
 
         /*---------------------------------------------------------------------- Header Service Detail ---------------------------------------------------------------------- */
@@ -131,6 +131,20 @@
 
     $startYear = date('Y', strtotime($service->create_date)) + 543;
 
+    $due_date = date('Y', strtotime($service->due_date)) + 543;
+
+    $end_date = date('Y', strtotime($service->end_date)) + 543;
+
+    $appYear = date('Y', strtotime($service->approve_date)) + 543;
+
+    $ETA = date('Y', strtotime($service->ETA)) + 543;
+
+    $ETD = date('Y', strtotime($service->ETD)) + 543;
+
+    $contract_start = date('Y', strtotime($service->contract_start)) + 543;
+
+    $contract_end = date('Y', strtotime($service->contract_end)) + 543;
+
 
 
 
@@ -143,9 +157,9 @@
     <div style="font-size:14px;margin-top: 5px;width:100%;">
         <p>
             <strong>Requerted Installation & Activation date (DD/MM/YYYY) : </strong>
-            <?= date_format(date_create($service->due_date), 'd/m/' . $startYear); ?>
+            <?= date_format(date_create($service->due_date), 'd/m/' . $due_date); ?>
             -
-            <?= date_format(date_create($service->end_date), 'd/m/' . $startYear); ?>
+            <?= date_format(date_create($service->end_date), 'd/m/' . $end_date); ?>
             &nbsp;
             &nbsp;
             &nbsp;
@@ -156,14 +170,7 @@
             &nbsp;
             &nbsp;
             &nbsp;
-            <strong>Project Code : <?php $i = 1;
-                                    foreach ($service_project as $index) : ?>
-                    <?= $index->projects ?>
-                    <?php if ($i < count($service_project)) : ?>
-                        /
-                    <?php $i++;
-                                        endif; ?>
-                <?php endforeach; ?>
+            <strong>Project Code : <?= $service->project ?>
             </strong>
 
         </p>
@@ -237,38 +244,34 @@
             <td style="width: 30%">
                 <strong>Fleet : </strong><?= $service->ves_fleet; ?>
             </td>
-            <td style="width: 15%">
+            <td style="width: 20%">
                 <strong>Call Sign : </strong><?= $service->ves_callsign; ?>
             </td>
             <td style="width: 25%">
                 <strong>Home port : </strong><?= $service->ves_home_port; ?>
             </td>
             <td>
-                <strong>Mode of Work : </strong><?= $service->ves_maintenance; ?>
+                <strong>Mode of Work : </strong><?php if ($service->ves_installation == true) {
+                                                    echo 'Installation';
+                                                } else if ($service->ves_survey == true) {
+                                                    echo 'Survey';
+                                                } else {
+                                                    echo $service->ves_maintenance;
+                                                } ?>
             </td>
         </tr>
 
         <tr>
             <td>
-                <strong> Name : </strong>
-                <?php $i = 1;
-                foreach ($vessel as $item) : ?>
-                    <?= $item->ves_name ?>
-                    <?php if ($i < count($vessel)) : ?>
-                        ,
-                    <?php $i++;
-                    endif; ?>
-                <?php endforeach; ?>
+                <strong> Name : </strong><?= $service->ves_name ?>
             </td>
             <td>
                 <strong>MMSI : </strong><?= $service->ves_mmsi; ?>
             </td>
-            <td>
+            <td colspan="2">
                 <strong>Flag : </strong><?= $service->ves_flag; ?>
             </td>
-            <td>
-                <strong>Survey : </strong><?= $service->ves_survey; ?>
-            </td>
+
         </tr>
 
         <tr>
@@ -278,16 +281,14 @@
             <td>
                 <strong>IMO : </strong><?= $service->ves_imo; ?>
             </td>
-            <td>
+            <td colspan="2">
                 <strong>Gross Tonnage : </strong><?= $service->ves_gross_tonnage; ?>
             </td>
-            <td>
-                <strong>Installation : </strong><?= $service->ves_installation; ?>
-            </td>
+
         </tr>
     </table>
 
-    <!----------------------------------------------------------------C O N T R A C T--------------------------------------------------------------------------->
+    <!----------------------------------------------------------------C O N T A C T--------------------------------------------------------------------------->
     <table class="tableheaderdetail bg-deep" style="width: 100%;">
         <tr>
             <td>
@@ -307,7 +308,7 @@
                 <strong>Email : </strong><?= $service->con_email; ?>
             </td>
             <td>
-                <strong>ETA : </strong><?= date_format(date_create($service->ETA), ' d/m/' . $startYear . ' H:i:s');; ?>
+                <strong>ETA : </strong><?= date_format(date_create($service->ETA), ' d/m/' . $ETA . ' H:i:s');; ?>
             </td>
         </tr>
 
@@ -319,7 +320,7 @@
                 <strong>Province : </strong><?= $service->port_province; ?>
             </td>
             <td>
-                <strong>ETD : </strong><?= date_format(date_create($service->ETD), ' d/m/' . $startYear . ' H:i:s');; ?>
+                <strong>ETD : </strong><?= date_format(date_create($service->ETD), ' d/m/' . $ETD . ' H:i:s');; ?>
             </td>
         </tr>
     </table>
@@ -334,24 +335,36 @@
         </tr>
     </table>
     <table class="tabledetail " style="width: 100%;">
-        <?php foreach ($service_package as $package) : ?>
+        <?php if ($service_package != null) : ?>
+            <?php foreach ($service_package as $package) : ?>
+                <tr>
+                    <td>
+                        <strong>Package Name : </strong><?= $package->pack_name; ?>
+                    </td>
+                    <td>
+                        <strong>Package Internet : </strong><?= $package->pack_internet; ?>
+                    </td>
+                    <td>
+                        <strong>Contract Strat :
+                            <?= date_format(date_create($service->contract_start), ' d/m/' . $contract_start . ''); ?>
+                            -
+                            <?= date_format(date_create($service->contract_end), ' d/m/' . $contract_end . ''); ?>
+                        </strong>
+                    </td>
+                </tr>
+
+            <?php endforeach; ?>
+        <?php else : ?>
             <tr>
                 <td>
-                    <strong>Package Name : </strong><?= $package->pack_name; ?>
-                </td>
-                <td>
-                    <strong>Package Internet : </strong><?= $package->pack_internet; ?>
-                </td>
-                <td>
                     <strong>Contract Strat :
-                        <?= date_format(date_create($service->contract_start), ' d/m/' . $startYear . ''); ?>
+                        <?= date_format(date_create($service->contract_start), ' d/m/' . $contract_start . ''); ?>
                         -
-                        <?= date_format(date_create($service->contract_end), ' d/m/' . $startYear . ''); ?>
+                        <?= date_format(date_create($service->contract_end), ' d/m/' . $contract_end . ''); ?>
                     </strong>
                 </td>
             </tr>
-
-        <?php endforeach; ?>
+        <?php endif; ?>
     </table>
 
     <!----------------------------------------------------------------P R O D U C T--------------------------------------------------------------------------->
@@ -388,19 +401,16 @@
     </table>
 
     <table class="tabledetail " style="width: 100%;">
-        <tr>
-            <td>
-                <strong>Engineer : </strong>
-                <?php $i = 1;
-                foreach ($engineer as $index) : ?>
-                    <?= $index->engineer; ?>
-                    <?php if ($i < count($engineer)) : ?>
-                        /
-                    <?php $i++;
-                    endif; ?>
-                <?php endforeach; ?>
-            </td>
-        </tr>
+        <?php foreach ($engineer as $index) : ?>
+            <tr>
+                <td>
+                    <strong>Engineer : </strong>
+
+                    <?= $index->engineer; ?> / <?= $index->detail_engineer ?>
+
+                </td>
+            </tr>
+        <?php endforeach; ?>
     </table>
 
     </div>
@@ -420,9 +430,11 @@
 
                     <th style="width: 5%; color:white;">No.</th>
 
-                    <th style="width: 45%; color:white;">Equipment</th>
+                    <th style="width: 15%;color:white;">Code</th>
 
-                    <th style="width: 40%; color:white;">Detail</th>
+                    <th style="width: 40%; color:white;">Equipment</th>
+
+                    <th style="width: 30%; color:white;">Detail</th>
 
                     <th style="width: 10%; color:white;">Quantity</th>
 
@@ -440,9 +452,13 @@
 
                         <td style="text-align: center; padding:0px;"><?= ++$i; ?></td>
 
+                        <td style="text-align: center; padding:0px;"><?= $item->code ?></td>
+
                         <td>
 
-                            <?= $item->service_name; ?><br>
+                            <?= $item->service_name; ?><?php if ($item->serial_number != null) {
+                                                            echo '(' . $item->serial_number . ')';
+                                                        } ?><br>
 
                             <em><small style="color: #333;"><?= $item->detail; ?></small></em>
 
@@ -465,6 +481,14 @@
 
     </div>
 
+    <table>
+        <tr>
+            <th>
+                <strong>Approve Date : </strong><?= date_format(date_create($service->approve_date), ' d/m/' . $appYear . ' H:i:s');; ?>
+            </th>
+        </tr>
+    </table>
+
     <br><br><br><br>
 
 
@@ -475,7 +499,7 @@
         <table class="tablesign" style="width: 100%">
 
             <tr>
-                
+
             </tr>
 
             <tr>

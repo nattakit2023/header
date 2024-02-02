@@ -132,6 +132,40 @@ class Product extends CI_Controller
         }
     }
 
+    function add_serial_number()
+    {
+
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            show_404();
+            exit();
+        }
+
+        $id = $this->input->post('id');
+
+        $serial = $this->input->post('serial_number');
+
+        if ($id == null || $serial == null) {
+            echo json_encode([
+                'status' => 'ERROR',
+                'message' => 'Data Not Found'
+            ]);
+        }
+
+        $res = $this->Function_model->updateData('tbl_service_detail', ['id' => $id], ['serial_number' => $serial]);
+
+        if ($res == true) {
+            echo json_encode([
+                'status' => 'SUCCESS',
+                'message' => 'Add Serial Number Success'
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'ERROR',
+                'message' => 'Add Serial Number Fail'
+            ]);
+        }
+    }
+
     // ลบสินค้าและบริการ
 
     function del_product()
@@ -295,9 +329,9 @@ class Product extends CI_Controller
             exit();
         }
 
-        $product_id = $this->input->post('product_id');
+        $id = $this->input->post('id');
 
-        if ($product_id == null) {
+        if ($id == null) {
 
             echo json_encode([
 
@@ -310,7 +344,7 @@ class Product extends CI_Controller
             exit();
         }
 
-        $res = $this->Function_model->getDataRow('tbl_product', ['product_id' => $product_id]);
+        $res = $this->Function_model->getDataRow('tbl_service_detail', ['id' => $id]);
 
         if ($res != null) {
 
@@ -320,11 +354,11 @@ class Product extends CI_Controller
 
                     'status' => 'SUCCESS',
 
-                    'product_name' => $res->product_name,
+                    'product_name' => $res->service_name,
 
-                    'product_id' => $res->product_id,
+                    'product_id' => $res->id,
 
-                    'product_price' => $res->product_price
+                    'serial_number' => $res->serial_number
 
                 ]
 
@@ -341,8 +375,6 @@ class Product extends CI_Controller
             exit();
         }
     }
-
-
 
     //option สินค้าและบริการ
 

@@ -36,20 +36,7 @@
 
                 <td><?= date_format(date_create($item->end_date), 'd/m/Y'); ?></td>
 
-                <td><?php $i = 1;
-                    foreach ($vessel as $ves) {
-
-                        if ($ves->service_invoice == $item->service_invoice) {
-                            if ($i > 1) {
-                                echo '/';
-                            }
-                            echo $ves->ves_name;
-                            $i++;
-                        }
-
-                    ?>
-                    <?php } ?>
-                </td>
+                <td><?= $item->ves_name ?></td>
 
                 <td><?= $item->cus_name ?></td>
 
@@ -71,9 +58,20 @@
                 </td>
 
                 <td class="text-center">
-                    <a href="<?= base_url(); ?>pages/service_detail/<?= $item->service_invoice; ?>" target="_blank" class="btn btn-sm btn-outline-primary rounded-0">Details</a>
+                    <div class="btn-group">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-outline-dark dropdown-toggle" data-toggle="dropdown"><i class="assignment"></i>Action</button>
+                            <div class="dropdown-menu">
+                                <?php if ($item->service_status == 'created') : ?>
+                                    <button onclick="modalEditService(<?= $item->service_invoice; ?>)" class="dropdown-item">Edit Calendar</button>
+                                <?php else : ?>
+                                    <button type="button" onclick="detail('<?= $item->service_invoice; ?>')" class="dropdown-item">Details</button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
                 </td>
-
+                
             </tr>
 
         <?php endforeach; ?>
@@ -187,7 +185,6 @@
 
     }
 
-
     function edit(con_id) {
 
         $.ajax({
@@ -221,8 +218,6 @@
         })
 
     }
-
-
 
     $('#tblCalendar').DataTable({
 

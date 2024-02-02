@@ -7,10 +7,8 @@
     <a href="<?= base_url(); ?>pages" class="brand-link text-center">
 
         <img src="<?= base_url(); ?>/assets/img/logosidebar.webp" style="width:100%; max-width: 150px;">
-
+        <!--<img src="<?= base_url(); ?>/assets/img/logo.png" style="width:100%; max-width: 150px;">-->
     </a>
-
-
 
     <!-- Sidebar -->
 
@@ -50,21 +48,25 @@
 
                 </li>
 
-                <li class="nav-item ">
+                <?php if ($this->session->userdata('admin_position') != 'Engineer' && $this->session->userdata('admin_position') != 'User') : ?>
 
-                    <a href="<?= base_url(); ?>pages/service_create" class="nav-link <?= ($active == 'service_create') ? 'active' : ''; ?>">
+                    <li class="nav-item ">
 
-                        <i class="nav-icon fas fa-tools"></i>
+                        <a href="<?= base_url(); ?>pages/service_create" class="nav-link <?= ($active == 'service_create') ? 'active' : ''; ?>">
 
-                        <p>
+                            <i class="nav-icon fas fa-tools"></i>
 
-                            Create Job Order
+                            <p>
 
-                        </p>
+                                Create Job Order
 
-                    </a>
+                            </p>
 
-                </li>
+                        </a>
+
+                    </li>
+
+                <?php endif; ?>
 
                 <li class="nav-item" id="sidebarService">
 
@@ -88,7 +90,7 @@
 
                             <a href="<?= base_url(); ?>pages/service" class="nav-link <?= ($active == 'service' ? 'active' : ''); ?>">
 
-                                <i class="fas fa-circle nav-icon"></i>
+                                <i class="fas fa-circle nav-icon text-default"></i>
 
                                 <p>All</p>
 
@@ -102,7 +104,7 @@
 
                             <a href="<?= base_url(); ?>pages/service_status?status=created" class="nav-link <?= ($this->input->get('status') == 'created' ? 'active' : ''); ?>">
 
-                                <i class="fas fa-circle nav-icon text-secondary"></i>
+                                <i class="fas fa-circle nav-icon text-info"></i>
 
                                 <p>Add Service</p>
 
@@ -130,7 +132,7 @@
 
                             <a href="<?= base_url(); ?>pages/service_status?status=approve" class="nav-link <?= ($this->input->get('status') == 'approve' ? 'active' : ''); ?>">
 
-                                <i class="fas fa-circle nav-icon text-info"></i>
+                                <i class="fas fa-circle nav-icon text-primary"></i>
 
                                 <p>Approve</p>
 
@@ -169,39 +171,11 @@
 
                         </li>
 
-                        <li class="nav-item">
-
-                            <a href="<?= base_url(); ?>pages/service_status?status=uninstall" class="nav-link <?= ($this->input->get('status') == 'uninstall' ? 'active' : ''); ?>">
-
-                                <i class="fas fa-circle nav-icon text-primary"></i>
-
-                                <p>Uninstall</p>
-
-                                <span class="badge badge-info right" id="alertUninstall"></span>
-
-                            </a>
-
-                        </li>
-
-                        <li class="nav-item">
-
-                            <a href="<?= base_url(); ?>pages/service_status?status=done" class="nav-link <?= ($this->input->get('status') == 'done' ? 'active' : ''); ?>">
-
-                                <i class="fas fa-circle nav-icon text-default"></i>
-
-                                <p>Closed</p>
-
-                                <span class="badge badge-info right" id="alertDone"></span>
-
-                            </a>
-
-                        </li>
-
                     </ul>
 
                 </li>
 
-                <li class="nav-item" id="sidebarReport">
+                <li class="nav-item" id="sidebarChecklist">
 
                     <a href="#" class="nav-link">
 
@@ -368,35 +342,15 @@
 
                 </li>
 
-                <!-- รายงานต่างๆ -->
-
-                <li class="nav-header text-info">Report</li>
-
-                <li class="nav-item">
-
-                    <a href="<?= base_url(); ?>pages/report_service" class="nav-link <?= ($active == 'report_service') ? 'active' : ''; ?>">
-
-                        <i class="nav-icon fas fa-circle"></i>
-
-                        <p>Report Job Order</p>
-
-                    </a>
-
-                </li>
-
-                <!-- จัดการสินค้าและบริการ -->
-
-                <li class="nav-header text-info">Management</li>
-
-                <li class="nav-item" id="sidebarManagement">
+                <li class="nav-item" id="sidebarCM">
 
                     <a href="#" class="nav-link">
 
-                        <i class="nav-icon fas fa-user-check"></i>
+                        <i class="nav-icon fas fa-clipboard-check"></i>
 
                         <p>
 
-                            Management
+                            CM Check
 
                             <i class="right fas fa-angle-left"></i>
 
@@ -406,7 +360,111 @@
 
                     <ul class="nav nav-treeview">
 
-                        <!---
+                        <li class="nav-item">
+
+                            <a href="<?= base_url(); ?>pages/report/cm_cre" class="nav-link <?= ($active == 'cm_cre') ? 'active' : ''; ?>">
+
+                                <i class="fas fa-ship	 nav-icon text-info"></i>
+
+                                <p>CM Created</p>
+
+                                <span class="badge badge-info right" id="alertCm_cre"></span>
+
+                            </a>
+
+                        </li>
+                        <li class="nav-item">
+
+                            <a href="<?= base_url(); ?>pages/report/cm_suc" class="nav-link <?= ($active == 'cm_suc') ? 'active' : ''; ?>">
+
+                                <i class="fas fa-ship nav-icon text-success"></i>
+
+                                <p>CM Success</p>
+
+                                <span class="badge badge-info right" id="alertCm_suc"></span>
+
+                            </a>
+
+                        </li>
+                    </ul>
+
+                </li>
+
+                <!-- รายงานต่างๆ -->
+
+                <li class="nav-header text-info">Report</li>
+
+                <li class="nav-item" id="sidebarReport">
+
+                    <a href="#" class="nav-link">
+
+                        <i class="nav-icon fas fa-circle"></i>
+
+                        <p>
+
+                            Report
+
+                            <i class="right fas fa-angle-left"></i>
+
+                        </p>
+
+                    </a>
+
+                    <ul class="nav nav-treeview">
+
+                        <li class="nav-item">
+
+                            <a href="<?= base_url(); ?>pages/report_service" class="nav-link <?= ($active == 'report_service') ? 'active' : ''; ?>">
+
+                                <i class="nav-icon fas fa-circle"></i>
+
+                                <p>Report Job Order</p>
+
+                            </a>
+
+                        </li>
+
+                        <li class="nav-item">
+
+                            <a href="<?= base_url(); ?>pages/report_fleet" class="nav-link <?= ($active == 'report_fleet') ? 'active' : ''; ?>">
+
+                                <i class="nav-icon fas fa-circle"></i>
+
+                                <p>Report Equipment</p>
+
+                            </a>
+
+                        </li>
+                    </ul>
+                </li>
+
+
+
+                <?php if ($this->session->userdata('admin_position') == 'Super admin' || $this->session->userdata('admin_position') == 'Management') : ?>
+
+                    <!-- จัดการสินค้าและบริการ -->
+
+                    <li class="nav-header text-info">Management</li>
+
+                    <li class="nav-item" id="sidebarManagement">
+
+                        <a href="#" class="nav-link">
+
+                            <i class="nav-icon fas fa-user"></i>
+
+                            <p>
+
+                                Management
+
+                                <i class="right fas fa-angle-left"></i>
+
+                            </p>
+
+                        </a>
+
+                        <ul class="nav nav-treeview">
+
+                            <!---
 
                 <li class="nav-item">
 
@@ -420,63 +478,63 @@
 
                 </li>
                 --->
-                        <li class="nav-item">
+                            <li class="nav-item">
 
-                            <a href="<?= base_url(); ?>pages/port" class="nav-link <?= ($active == 'port') ? 'active' : ''; ?>">
+                                <a href="<?= base_url(); ?>pages/port" class="nav-link <?= ($active == 'port') ? 'active' : ''; ?>">
 
-                                <i class="fas fa-anchor	 nav-icon text-danger"></i>
+                                    <i class="fas fa-anchor	 nav-icon"></i>
 
-                                <p>Port Management</p>
+                                    <p>Port </p>
 
-                                <span class="badge badge-info right" id="alertPort"></span>
+                                    <span class="badge badge-info right" id="alertPort"></span>
 
-                            </a>
+                                </a>
 
-                        </li>
-                        <li class="nav-item">
+                            </li>
+                            <li class="nav-item">
 
-                            <a href="<?= base_url(); ?>pages/package" class="nav-link <?= ($active == 'package') ? 'active' : ''; ?>">
+                                <a href="<?= base_url(); ?>pages/package" class="nav-link <?= ($active == 'package') ? 'active' : ''; ?>">
 
-                                <i class="fas fa-satellite-dish	 nav-icon text-warning"></i>
+                                    <i class="fas fa-satellite-dish	 nav-icon"></i>
 
-                                <p>Package Management</p>
+                                    <p>Package </p>
 
-                                <span class="badge badge-info right" id="alertPackage"></span>
+                                    <span class="badge badge-info right" id="alertPackage"></span>
 
-                            </a>
+                                </a>
 
-                        </li>
-                        <li class="nav-item">
+                            </li>
+                            <li class="nav-item">
 
-                            <a href="<?= base_url(); ?>pages/contact" class="nav-link <?= ($active == 'contact') ? 'active' : ''; ?>">
+                                <a href="<?= base_url(); ?>pages/contact" class="nav-link <?= ($active == 'contact') ? 'active' : ''; ?>">
 
-                                <i class="fas fa-phone nav-icon text-success"></i>
+                                    <i class="fas fa-phone nav-icon"></i>
 
-                                <p>Contact Management</p>
+                                    <p>Contact </p>
 
-                                <span class="badge badge-info right" id="alertContact"></span>
+                                    <span class="badge badge-info right" id="alertContact"></span>
 
-                            </a>
+                                </a>
 
-                        </li>
-                        <li class="nav-item">
+                            </li>
+                            <li class="nav-item">
 
-                            <a href="<?= base_url(); ?>pages/user" class="nav-link <?= ($active == 'user') ? 'active' : ''; ?>">
+                                <a href="<?= base_url(); ?>pages/user" class="nav-link <?= ($active == 'user') ? 'active' : ''; ?>">
 
-                                <i class="fas fa-user nav-icon text-info"></i>
+                                    <i class="fas fa-user nav-icon"></i>
 
-                                <p>User Management</p>
+                                    <p>User </p>
 
-                                <span class="badge badge-info right" id="alertUser"></span>
+                                    <span class="badge badge-info right" id="alertUser"></span>
 
-                            </a>
+                                </a>
 
-                        </li>
-                    </ul>
-                </li>
+                            </li>
+                        </ul>
+                    </li>
 
 
-
+                <?php endif; ?>
 
                 <!-- ตั้งค่า -->
 
@@ -518,7 +576,7 @@
 
         $.ajax({
 
-            url: '<?= base_url(); ?>/service/sidebar_status',
+            url: '<?= base_url(); ?>sidebar/sidebar_status',
 
             method: 'POST',
 
@@ -591,7 +649,7 @@
 
                 }
 
-                //PMS All
+                //PMS Create
 
                 if (res.pms_cre > 0) {
 
@@ -599,11 +657,27 @@
 
                 }
 
-                //PMS All
+                //PMS Success
 
                 if (res.pms_suc > 0) {
 
                     $('#alertPms_suc').html(res.pms_suc);
+
+                }
+
+                //CM Create
+
+                if (res.cm_cre > 0) {
+
+                    $('#alertCm_cre').html(res.cm_cre);
+
+                }
+
+                //CM Success
+
+                if (res.cm_suc > 0) {
+
+                    $('#alertCm_suc').html(res.cm_suc);
 
                 }
 
@@ -694,6 +768,13 @@
 
         } else if (sidebar == 'pms') {
             $('#sidebarPMS').addClass('menu-open');
+
+        } else if (sidebar == 'cm') {
+            $('#sidebarCM').addClass('menu-open');
+
+        } else if (sidebar == 'check') {
+            $('#sidebarChecklist').addClass('menu-open');
+
         }
 
     })

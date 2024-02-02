@@ -269,10 +269,11 @@ class Package extends CI_Controller
 
     function update_Package()
     {
-        //if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 
-        //    show_404(); exit();
-        //}
+            show_404();
+            exit();
+        }
 
         $pack_id = $this->input->post('pack_id');
 
@@ -305,24 +306,18 @@ class Package extends CI_Controller
 
         ];
 
-        $check = $this->Function_model->fetchDataResult('tbl_package', $data_arr);
+        $res = $this->Function_model->updateData('tbl_package', $where_arr, $data_arr);
 
+        if ($res == TRUE) {
 
-        if ($check == 0) {
+            echo json_encode([
 
-            $res = $this->Function_model->updateData('tbl_package', $where_arr, $data_arr);
+                'status' => 'SUCCESS',
 
-            if ($res == TRUE) {
+                'message' => $pack_id
 
-                echo json_encode([
-
-                    'status' => 'SUCCESS',
-
-                    'message' => $pack_id
-
-                ]);
-                exit();
-            }
+            ]);
+            exit();
         } else {
 
             echo json_encode([

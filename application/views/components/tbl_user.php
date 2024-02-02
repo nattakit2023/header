@@ -57,7 +57,7 @@
 
                     <?php if ($this->session->userdata('admin_id') != $item->admin_id) : ?>
 
-                        <button onclick="edit('<?= $item->admin_id; ?>')" admin_id="<?= $item->admin_id; ?>" type="button" class="btn btn-success btn-sm rounded-0" data-toggle="modal" data-target="#modalEditUser"><i class="fas fa-edit"></i></button>
+                        <button onclick="edit('<?= $item->admin_id; ?>')" admin_id="<?= $item->admin_id; ?>" type="button" class="btn btn-success btn-sm rounded-0"><i class="fas fa-edit"></i></button>
 
                         <button onclick="del('<?= $item->admin_id; ?>')" type="button" class="btn btn-danger btn-sm rounded-0"><i class="fas fa-trash"></i></button>
 
@@ -274,13 +274,13 @@
 
                 if (res.status === 'SUCCESS') {
 
+                    $('#modalEditUser').modal('show');
+
                     $('#edit_admin_id').val(admin_id);
 
                     $('#edit_admin_name').val(res.data.admin_name);
 
                     $('#edit_admin_username').val(res.data.admin_username);
-
-                    document.querySelector('#edit_admin_position').value = res.data.admin_position;
 
                 }
 

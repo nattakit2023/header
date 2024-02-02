@@ -2,8 +2,6 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-
-
 class Vessel extends CI_Controller
 
 {
@@ -93,7 +91,7 @@ class Vessel extends CI_Controller
 
         $projects = $this->Function_model3->fetchDataResult('projects', '', 'id', 'ASC');
 
-        $project_s = $this->Function_model->fetchDataResult('tbl_service_project', ['service_invoice' => $service_invoice]);
+        $project_s = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
 
         if ($project != '') {
             echo '<option value="'  . $project . '"  selected>' . $project . '</option>';
@@ -104,14 +102,9 @@ class Vessel extends CI_Controller
 
         if ($service_invoice != '') {
             foreach ($projects as $item) {
-                $i = 0;
-                foreach ($project_s as $item2) {
-                    if ($item->name == $item2->projects) {
-                        echo '<option value="' . $item2->projects . '" selected>' . $item->id . " . " .  $item2->projects . '</option>';
-                        $i++;
-                    }
-                }
-                if ($i == 0) {
+                if ($item->name == $project_s->project) {
+                    echo '<option value="' . $project_s->project . '" selected>' . $item->id . " . " .  $project_s->project . '</option>';
+                } else {
                     echo '<option value="' . $item->name . '">' . $item->id . " . " .  $item->name . '</option>';
                 }
             }
@@ -140,7 +133,7 @@ class Vessel extends CI_Controller
 
         $vessel = $this->Function_model3->fetchDataResult('product_warehouse', '', 'id', 'ASC');
 
-        $vessel_s = $this->Function_model->fetchDataResult('tbl_vessel_name', ['service_invoice' => $service_invoice]);
+        $vessel_s = $this->Function_model->getDataRow('tbl_service', ['service_invoice' => $service_invoice]);
 
         if ($name != '') {
             echo '<option value="' . $name . '" selected>' . $name . '</option>';
@@ -150,14 +143,9 @@ class Vessel extends CI_Controller
 
         if ($service_invoice != '') {
             foreach ($vessel as $item) {
-                $i = 0;
-                foreach ($vessel_s as $item2) {
-                    if ($item->title == $item2->ves_name) {
-                        echo '<option value="' . $item2->ves_name . '" selected>' . $item->id . " . " .  $item2->ves_name . '</option>';
-                        $i++;
-                    }
-                }
-                if ($i == 0) {
+                if ($item->title == $vessel_s->ves_name) {
+                    echo '<option value="' . $item->title . '" selected>' . $item->id . " . " .  $item->title . '</option>';
+                } else {
                     echo '<option value="' . $item->title . '">' . $item->id . " . " .  $item->title . '</option>';
                 }
             }
@@ -220,6 +208,4 @@ class Vessel extends CI_Controller
             echo '<option value="' . $item->name . '">' .  $item->name . '</option>';
         }
     }
-
-
 }

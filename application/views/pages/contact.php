@@ -8,7 +8,7 @@
 
                 <div class="col-sm-6">
 
-                    <h3><strong><?=$title?></strong></h3>
+                    <h3><strong><?= $title ?></strong></h3>
 
                 </div>
 
@@ -18,7 +18,7 @@
 
                         <li class="breadcrumb-item"><a href="<?= base_url(); ?>/pages">หน้าหลัก</a></li>
 
-                        <li class="breadcrumb-item active"><?=$title?></li>
+                        <li class="breadcrumb-item active"><?= $title ?></li>
 
                     </ol>
 
@@ -38,7 +38,7 @@
 
                 <div class="col-md-12 mb-2">
 
-                    <button type="button" onclick="clearForm()" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddContact"><i class="fas fa-user-plus"></i> Contact</button>
+                    <button type="button" onclick="clearForm()" class="btn btn-primary rounded-0" id="add_contact"><i class="fas fa-user-plus"></i> Contact</button>
 
                 </div>
 
@@ -88,7 +88,7 @@
 
                 <h5 class="modal-title">ข้อมูลติดต่อคุมบนเรือ</h5>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalAddContact')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -126,7 +126,7 @@
                             <label class="col-md-3"><strong class="text-danger">*</strong>Tel :</label>
 
                             <div class="col-md-9">
-                                <input type="text" id="con_tel" class="form-control rounded-0" placeholder="Contact Tel" maxlength="15" oninput="this.value=this.value.replace(/[^0-9\\-]/g,'');">
+                                <input type="text" id="con_tel" class="form-control rounded-0" placeholder="Contact Tel" maxlength="20">
                             </div>
 
                         </div>
@@ -184,7 +184,7 @@
 
                 <h5 class="modal-title">แก้ไขข้อมูล</h5>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalEditContact')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -222,7 +222,7 @@
                             <label class="col-md-3"><strong class="text-danger">*</strong>Tel :</label>
 
                             <div class="col-md-9">
-                                <input type="text" id="edit_con_tel" class="form-control rounded-0" placeholder="Contact Tel" maxlength="15" oninput="this.value=this.value.replace(/[^0-9\\-]/g,'');">
+                                <input type="text" id="edit_con_tel" class="form-control rounded-0" placeholder="Contact Tel" maxlength="20">
                             </div>
 
                         </div>
@@ -288,13 +288,7 @@
 
     }
 
-    $(document).ready(function() {
-
-        tblContact();
-
-    });
-
-    function clearForm(){
+    function clearForm() {
 
         $('#con_name').val('');
 
@@ -304,7 +298,15 @@
 
     }
 
+    function hide(modal) {
+        $('#' + modal).modal('hide');
+    }
 
+    $(document).ready(function() {
+
+        tblContact();
+
+    });
 
     // Edit Contact
 
@@ -318,7 +320,7 @@
 
         let con_email = $('#edit_con_email').val();
 
-        
+
 
         if (con_id == '' || con_name == '' || con_tel == '' || con_email == '') {
 
@@ -450,6 +452,12 @@
 
         })
 
+    });
+
+    // Add Contact Button
+
+    $(document).on('click', '#add_contact', function() {
+        $('#modalAddContact').modal('show');
     });
 
     // Create Contact

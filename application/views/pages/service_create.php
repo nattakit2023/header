@@ -62,7 +62,7 @@
 
                                 <div class="col-md-2">
 
-                                    <select class="form-select" data-placeholder="Project Code" id="projects" multiple="multiple">
+                                    <select class="form-control select2 rouned-0" id="projects">
 
                                         <option value="">Loading...</option>
 
@@ -238,7 +238,7 @@
 
                                     <label><strong class="text-danger">*</strong>Name :</label>
 
-                                    <select class="form-select" id="ves_name" data-placeholder="Vessel Name" multiple="multiple">
+                                    <select class="form-control select2 rouned-0" id="ves_name">
 
                                         <option value="">Loading...</option>
 
@@ -318,7 +318,7 @@
 
                                     <label><strong class="text-danger">*</strong>IMO :</label>
 
-                                    <input type="text" maxlength="6" id="ves_imo" class="form-control rounded-0" placeholder="IMO" list="imo-list" maxlength="6" oninput="this.value=this.value.replace(/[^0-9\s]/g,'');">
+                                    <input type="text" id="ves_imo" class="form-control rounded-0" placeholder="IMO" list="imo-list" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
 
                                     <datalist id="imo-list">
                                         <?php foreach ($service as $index) : ?>
@@ -359,7 +359,7 @@
 
                                     <label><strong class="text-danger">*</strong>Maintenance :</label>
 
-                                    <select class="form-control select2 rouned-0" id="ves_maintenance">
+                                    <select class="form-control select2 rouned-0" id="ves_maintenance" onchange="disable_maintenance(value)">
 
                                         <option value="Preventive Maintenance">Preventive Maintenance</option>
                                         <option value="Corrective Maintenance">Corrective Maintenance</option>
@@ -374,7 +374,7 @@
                                             <label><strong class="text-danger">*</strong>Survey :</label>
                                         </div>
                                         <div class="col-md-2">
-                                            <input type="checkbox" id="ves_survey" name="ves_survey">
+                                            <input type="checkbox" id="ves_survey" name="ves_survey" onclick="disable_maintenance('ves_survey')">
                                         </div>
                                     </div>
 
@@ -383,7 +383,7 @@
                                             <label><strong class="text-danger">*</strong>Installation :</label>
                                         </div>
                                         <div class="col-md-2">
-                                            <input type="checkbox" id="ves_installation" name="ves_installation">
+                                            <input type="checkbox" id="ves_installation" name="ves_installation" onclick="disable_maintenance('ves_installation')">
                                         </div>
                                     </div>
 
@@ -398,19 +398,21 @@
                                     <p class="text-primary"><i class="fas fa-circle"></i> Contact Onboard</p>
 
                                 </div>
+                                <?php if ($this->session->userdata('admin_position') == 'Super admin') : ?>
+                                    <div class="col-md-4 btn-group">
+                                        <div>
 
-                                <div>
+                                            <button type="button" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddContact"><i class="fas fa-plus"></i> Add Contact</button>
 
-                                    <button type="button" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddContact"><i class="fas fa-plus"></i> Add Contact</button>
+                                        </div>
 
-                                </div>
+                                        <div style="margin-left: 10px">
 
-                                <div style="margin-left: 10px">
+                                            <button type="button" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddPort"><i class="fas fa-plus"></i> Add Port</button>
 
-                                    <button type="button" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddPort"><i class="fas fa-plus"></i> Add Port</button>
-
-                                </div>
-
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
 
@@ -507,13 +509,13 @@
                                     <p class="text-primary"><i class="fas fa-circle"></i> Package</p>
 
                                 </div>
+                                <?php if ($this->session->userdata('admin_position') == 'Super admin') : ?>
+                                    <div class="col-md-2">
 
-                                <div>
+                                        <button type="button" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddPackage"><i class="fas fa-plus"></i> Add Package</button>
 
-                                    <button type="button" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddPackage"><i class="fas fa-plus"></i> Add Package</button>
-
-                                </div>
-
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="row mb-2">
@@ -775,7 +777,13 @@
                             <label class="col-md-3"><strong class="text-danger">*</strong>Port :</label>
 
                             <div class="col-md-9">
-                                <input type="text" id="port_names" class="form-control rounded-0" placeholder="Port Name">
+                                <input type="text" id="port_names" class="form-control rounded-0" placeholder="Port Name" list="port_list">
+
+                                <datalist id="port_list">
+                                    <?php foreach ($port as $index) : ?>
+                                        <option value="<?= $index->port_name ?>"><?= $index->port_name ?></option>
+                                    <?php endforeach; ?>
+                                </datalist>
                             </div>
 
                         </div>
@@ -784,7 +792,12 @@
 
                             <label class="col-md-3"><strong class="text-danger">*</strong>Province :</label>
                             <div class="col-md-9">
-                                <input type="text" id="port_provinces" class="form-control rounded-0" placeholder="Province of Port">
+                                <input type="text" id="port_provinces" class="form-control rounded-0" placeholder="Province of Port" list="province_list">
+                                <datalist id="province_list">
+                                    <?php foreach ($port as $index) : ?>
+                                        <option value="<?= $index->port_province ?>"><?= $index->port_province ?></option>
+                                    <?php endforeach; ?>
+                                </datalist>
                             </div>
 
                         </div>
@@ -1265,12 +1278,6 @@
             success: function(res) {
 
                 $('#projects').html(res);
-                $('#projects').select2({
-                    theme: "bootstrap-5",
-                    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-                    placeholder: $(this).data('placeholder'),
-                    closeOnSelect: false,
-                });
             }
 
         })
@@ -1307,12 +1314,6 @@
             success: function(res) {
 
                 $('#ves_name').html(res);
-                $('#ves_name').select2({
-                    theme: "bootstrap-5",
-                    width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
-                    placeholder: $(this).data('placeholder'),
-                    closeOnSelect: false,
-                });
 
             }
 
@@ -1483,6 +1484,31 @@
     //clear form
 
 
+    //Disabled Maintenance
+
+    function disable_maintenance(value) {
+
+        if (value == 'Preventive Maintenance') {
+            $('#ves_survey').attr('disabled', false);
+            $('#ves_installation').attr('disabled', false);
+        } else if (value == 'Corrective Maintenance') {
+            $('#ves_survey').attr('disabled', true).prop('checked', false);
+            $('#ves_installation').attr('disabled', true).prop('checked', false);
+        } else if (document.getElementById('' + value).checked == true) {
+            if (value == 'ves_survey') {
+                $('#ves_installation').prop('checked', false);
+            } else {
+                $('#ves_survey').prop('checked', false);
+            }
+            $('#ves_maintenance').attr('disabled', true);
+        } else{
+            $('#ves_maintenance').attr('disabled', false);
+        }
+
+    }
+
+    //Disabled Maintenance
+
     function search_license_plate() {
 
         let license_plate = $("#search_license_plate").val();
@@ -1509,8 +1535,6 @@
 
     }
 
-
-
     $(document).ready(function() {
         optionPackageInternet('');
         optionPackage();
@@ -1526,8 +1550,6 @@
 
 
     });
-
-
 
     // Create Customer
 
@@ -1809,8 +1831,6 @@
 
     });
 
-
-
     // Create Port
 
     $(document).on('click', '#createPort', function() {
@@ -2075,7 +2095,6 @@
 
     });
 
-
     // Create Service
 
     $(document).on('click', '#createService', function() {
@@ -2155,7 +2174,7 @@
         if (projects == '' || cus_name == '' || cus_tel == '' || cus_address == '' || cus_email == '' || cus_zipcode == '' || ves_fleet == '' || ves_name == '' ||
             ves_type == '' || ves_callsign == '' || ves_imo == '' || ves_mmsi == '' || ves_year == '' || ves_maintenance == '' || ves_flag == '' || ves_home_port == '' ||
             ves_gross_tonnage == '' || con_name == '' || con_tel == '' || con_email == '' || port_name == '' || port_province == '' || admin_name == '' ||
-            product == '' || pack_name == '' || pack_internet == '' || remark_create == '' || create_date == '' || due_date == '' || end_date == '' || eta == '' || etd == '' ||
+            product == '' || remark_create == '' || create_date == '' || due_date == '' || end_date == '' || eta == '' || etd == '' ||
             contract_start == '' || contract_end == '') {
 
             Swal.fire({

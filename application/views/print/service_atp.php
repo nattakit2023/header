@@ -173,16 +173,7 @@
             <h1><strong>Purchase Order No : <u><?= $service->service_invoice ?></u></strong></h1>
         </div>
         <div class="detail" style="width: 100%;text-align:center;">
-            <h1><strong>(VESSEL : <?php $i = 1;
-                                    foreach ($vessel as $item) : ?>
-                        <?= $item->ves_name;
-                                        if ($i < count($vessel)) : ?>
-                            /
-                        <?php $i++;
-                                        endif; ?>
-
-
-                        <?php endforeach; ?>)</strong></h1>
+            <h1><strong>(VESSEL : <?= $service->ves_name ?>)</strong></h1>
         </div>
         <div style="width: 100%;text-align:center;">
             <h3><strong>MMSI : <?= $service->ves_mmsi ?></strong></h3>
@@ -373,9 +364,11 @@
 
                             <th style="width: 5%; color:white;">No.</th>
 
-                            <th style="width: 45%; color:white;">Equipment</th>
+                            <th style="width: 15%; color:white;">Code</th>
 
-                            <th style="width: 40%; color:white;">Detail</th>
+                            <th style="width: 35%; color:white;">Equipment</th>
+
+                            <th style="width: 35%; color:white;">Detail</th>
 
                             <th style="width: 10%; color:white;">Quantity</th>
 
@@ -394,15 +387,19 @@
 
                                 <td style="text-align: center; padding:0px;"><?= ++$i; ?></td>
 
+                                <td style="text-align: center;"> <?= $item->code ?></td>
+
                                 <td>
 
-                                    <?= $item->service_name; ?><br>
+                                    <?= $item->service_name; ?><?php if ($item->serial_number != null) {
+                                                                    echo '(' . $item->serial_number . ')';
+                                                                } ?><br>
 
                                     <em><small style="color: #333;"><?= $item->detail; ?></small></em>
 
                                 </td>
 
-                                <td></td>
+                                <td> <?= $item->service_detail; ?></td>
 
                                 <td style="text-align: center;">
                                     <em><small style="color: #333;"><?= $item->amount; ?></small></em>

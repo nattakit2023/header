@@ -30,6 +30,17 @@
         width: 100%;
     }
 
+    .alert_size {
+        border-collapse: collapse;
+        border: 0.1rem solid #eeeeee;
+        background-color: #ffffff;
+        color: #445566;
+    }
+
+    .alert_size:hover {
+        display: none;
+    }
+
     .bg_gray {
         background-color: rgb(240, 240, 240);
     }
@@ -65,6 +76,13 @@
         position: relative;
         background-color: #ffffff;
         z-index: -1;
+    }
+
+    .bg_alert_day {
+        background-color: white;
+        color: #000000;
+        text-align: right;
+        font-size: 12px;
     }
 
     .bg_pms {
@@ -419,15 +437,15 @@
                     <div class="card rounded-0">
                         <div class="card-header bg-light rounded-0">
                             <div class="row">
-                                <div class="col-md-6" id="head">
+                                <div class="col" id="head">
 
                                 </div>
-                                <div class="col-md-6 ">
+                                <div class="col-auto">
                                     <div class="row">
-                                        <div class="col-md-6"></div>
-                                        <div class="col-md-2"><button class="btn_event" id="service">Service</button></div>
-                                        <div class="col-md-2"><button class="btn_event" id="pms">PMS</button></div>
-                                        <div class="col-md-2"><button class="btn_event" id="event">Event</button></div>
+                                        <div class="col-auto"><button class="btn_event" id="service">Service</button></div>
+                                        <div class="col-auto"><button class="btn_event" id="pms">PMS</button></div>
+                                        <div class="col-auto"><button class="btn_event" id="cm">CM</button></div>
+                                        <div class="col-auto"><button class="btn_event" id="event">Event</button></div>
                                     </div>
                                 </div>
                             </div>
@@ -721,7 +739,7 @@
 
     var count_day = [];
 
-    var today = 0;
+    var today = [];
 
     function calendar(month, year) {
         if (month == months && year == years) {
@@ -756,8 +774,9 @@
         var first_date = new Date(year, month, 1).getDay();
         var current_date = 1;
         var next_date = 1;
+        count_day.length = 0;
+        today.length = 0;
         for (day = 1; day <= 42; day++) {
-
             $('#bg' + day).removeClass();
             $('#bg' + day).attr('onclick', 'modalAddEvent(value)');
             $('#date' + day).addClass('header');
@@ -793,43 +812,64 @@
             }
             $('#' + (day)).addClass('corner');
             if (next_date <= 1) {
+                num_date = 0;
                 <?php foreach ($calendar as $item) : ?>
+                    num2_date = num_date;
                     if (
-                        ('<?= date_format(date_create($item->due_date), 'd') ?>' <= (current_date - 1) && '<?= date_format(date_create($item->end_date), 'd') ?>' >= (current_date - 1)) &&
-                        ('<?= date_format(date_create($item->due_date), 'm') ?>' == (month + 1) && '<?= date_format(date_create($item->end_date), 'm') ?>' >= (month + 1)) &&
-                        ('<?= date_format(date_create($item->due_date), 'Y') ?>' == year && '<?= date_format(date_create($item->end_date), 'Y') ?>' >= year)
+                        (('<?= date_format(date_create($item->due_date), 'd') ?>' <= (current_date - 1) && '<?= date_format(date_create($item->end_date), 'd') ?>' >= (current_date - 1)) &&
+                            ('<?= date_format(date_create($item->due_date), 'm') ?>' == (month + 1) && '<?= date_format(date_create($item->end_date), 'm') ?>' >= (month + 1)) &&
+                            ('<?= date_format(date_create($item->due_date), 'Y') ?>' == year && '<?= date_format(date_create($item->end_date), 'Y') ?>' >= year))
                     ) {
-                        if ('<?= date_format(date_create($item->due_date), 'd') ?>' == (current_date - 1) || day % 7 == 1) {
-                            $('#date' + day).append('<div id ="' + day + "-" + <?= $item->id ?> + '">' + '<?= $item->title ?>' + '</div>').attr('colspan', 2);
-                        } else if (count_day.length != 0) {
-                            for (count = 0; count < count_day.length; count++) {
-                                if (count_day[count] == <?= $item->id ?>) {
-                                    $('#date' + day).append('<div id ="' + day + "-" + <?= $item->id ?> + '">.</div>');
-                                    $('#' + day + "-" + <?= $item->id ?>).css('color', '<?= $item->color ?>')
-                                } else {
+                        if (num_date < 2) {
+                            today.push(<?= $item->id ?>);
+                            if ('<?= date_format(date_create($item->due_date), 'd') ?>' == (current_date - 1) || day % 7 == 1) {
+                                $('#date' + day).append('<div id ="' + day + "-" + <?= $item->id ?> + '">' + '<?= $item->title ?>' + '</div>');
+                            } else {
+                                checkdate = 0;
+                                for (count = 0; count < count_day.length; count++) {
+                                    if (count_day[count] == <?= $item->id ?>) {
+                                        $('#date' + day).append('<div id ="' + day + "-" + <?= $item->id ?> + '">.</div>');
+                                        $('#' + day + "-" + <?= $item->id ?>).css('color', '<?= $item->color ?>')
+                                        checkdate++;
+
+                                    }
+                                }
+                                if (checkdate == 0) {
                                     $('#date' + day).append('<div id ="space' + day + '' + count + '">.</div>');
                                     $('#space' + day + '' + count).addClass('bg_white');
+                                    num_date++;
                                 }
                             }
+                            $('#' + day + "-" + <?= $item->id ?>).addClass('bg_event').attr('onclick', 'modalEditEvent(value)').val('<?= $item->id ?>');
+                            $('#' + day + "-" + <?= $item->id ?>).css('background-color', '<?= $item->color ?>');
+
+                            var check = $.inArray(<?= $item->id ?>, count_day);
+                            if (check !== -1) {
+
+                            } else {
+                                count_day.push(<?= $item->id ?>);
+
+                            }
+
+                        }
+                        if (num2_date == num2_date) {
+                            num_date++;
                         }
 
-                        $('#' + day + "-" + <?= $item->id ?>).addClass('bg_event').attr('onclick', 'modalEditEvent(value)').val('<?= $item->id ?>');
-                        $('#' + day + "-" + <?= $item->id ?>).css('background-color', '<?= $item->color ?>');
-                        today++;
-                        var check = $.inArray(<?= $item->id ?>, count_day);
-                        if (check !== -1) {
-
-                        } else {
-                            count_day.push(<?= $item->id ?>);
-                        }
                     }
 
                 <?php endforeach; ?>
-                if (today == 0) {
-                    count_day.length = 0;
+
+                if (num_date - 2 > 0) {
+                    $('#date' + day).append('<div id ="alert' + day + '"><i class="fas fa-plus alert_size">' + (num_date - 2) + '</i></div>');
+                    $('#alert' + day).addClass('bg_alert_day');
+                }
+
+                if (today.length < count_day.length) {
+                    count_day = today;
                 }
                 before_day = today;
-                today = 0;
+                today.length = 0;
             }
 
         }
@@ -910,6 +950,217 @@
         })
     }
 
+    function modalEditService(value) {
+        $('#modalEditEvent').modal('show');
+        $('#edit').attr('value', '1');
+
+        $.ajax({
+
+            url: '<?= base_url(); ?>calendar/get_calendar',
+
+            method: 'POST',
+
+            dataType: 'JSON',
+
+            data: {
+                service_invoice: value
+            },
+
+            success: function(res) {
+
+                if (res.status === 'SUCCESS') {
+
+                    $('#modalEditEvent').modal('show');
+
+                    $('#cal_id').val(res.data.id);
+
+                    $('#edit_title').val(res.data.title);
+
+                    $('#edit_descript').val(res.data.descript);
+
+                    $('#edit_due_date').val(res.data.due_date);
+
+                    $('#edit_end_date').val(res.data.end_date);
+
+                    $('#edit_color').val(res.data.color);
+
+                    $('#edit_header').val(res.data.header);
+
+                } else {
+
+                    Swal.fire({
+
+                        icon: 'error',
+
+                        title: 'ผิดพลาด!',
+
+                        text: res.message,
+
+                        confirmButtonText: 'ตกลง'
+
+                    });
+
+                    return false;
+
+                }
+
+            }
+
+        })
+    }
+
+    function modalEditPMS(value) {
+        $('#modalEditEvent').modal('show');
+        $('#edit').attr('value', '1');
+
+        $.ajax({
+
+            url: '<?= base_url(); ?>calendar/get_calendar',
+
+            method: 'POST',
+
+            dataType: 'JSON',
+
+            data: {
+                pms_invoice: value
+            },
+
+            success: function(res) {
+
+                if (res.status === 'SUCCESS') {
+
+                    $('#modalEditEvent').modal('show');
+
+                    $('#cal_id').val(res.data.id);
+
+                    $('#edit_title').val(res.data.title);
+
+                    $('#edit_descript').val(res.data.descript);
+
+                    $('#edit_due_date').val(res.data.due_date);
+
+                    $('#edit_end_date').val(res.data.end_date);
+
+                    $('#edit_color').val(res.data.color);
+
+                    $('#edit_header').val(res.data.header);
+
+                } else {
+
+                    Swal.fire({
+
+                        icon: 'error',
+
+                        title: 'ผิดพลาด!',
+
+                        text: res.message,
+
+                        confirmButtonText: 'ตกลง'
+
+                    });
+
+                    return false;
+
+                }
+
+            }
+
+        })
+    }
+
+    function modalEditCM(value) {
+        $('#modalEditEvent').modal('show');
+        $('#edit').attr('value', '1');
+
+        $.ajax({
+
+            url: '<?= base_url(); ?>calendar/get_calendar',
+
+            method: 'POST',
+
+            dataType: 'JSON',
+
+            data: {
+                cm_invoice: value
+            },
+
+            success: function(res) {
+
+                if (res.status === 'SUCCESS') {
+
+                    $('#modalEditEvent').modal('show');
+
+                    $('#cal_id').val(res.data.id);
+
+                    $('#edit_title').val(res.data.title);
+
+                    $('#edit_descript').val(res.data.descript);
+
+                    $('#edit_due_date').val(res.data.due_date);
+
+                    $('#edit_end_date').val(res.data.end_date);
+
+                    $('#edit_color').val(res.data.color);
+
+                    $('#edit_header').val(res.data.header);
+
+                } else {
+
+                    Swal.fire({
+
+                        icon: 'error',
+
+                        title: 'ผิดพลาด!',
+
+                        text: res.message,
+
+                        confirmButtonText: 'ตกลง'
+
+                    });
+
+                    return false;
+
+                }
+
+            }
+
+        })
+    }
+
+    function detail(value) {
+        $.ajax({
+            url: '<?= base_url() ?>calendar/detail_invoice',
+            method: 'POST',
+            dataType: 'JSON',
+            data: {
+                invoice: value
+            },
+            success: function(res) {
+                if (res.status == 'SUCCESS') {
+                    setTimeout(function() {
+
+                        window.location.assign('<?= base_url(); ?>pages/service_detail/' + res.service_invoice);
+
+                    }, 500);
+                } else {
+                    Swal.fire({
+
+                        icon: 'error',
+
+                        title: 'ผิดพลาด!',
+
+                        text: res.message,
+
+                        confirmButtonText: 'ตกลง'
+
+                    });
+
+                    return false;
+                }
+            }
+        });
+    }
+
     function tblCalendar(month, year) {
 
         $.ajax({
@@ -928,6 +1179,7 @@
                 $('#showTable').html(res);
                 $('#service').prop('disabled', true);
                 $('#pms').prop('disabled', false);
+                $('#cm').prop('disabled', false);
                 $('#event').prop('disabled', false);
 
             }
@@ -954,6 +1206,7 @@
                 $('#showTable').html(res);
                 $('#service').prop('disabled', false);
                 $('#pms').prop('disabled', true);
+                $('#cm').prop('disabled', false);
                 $('#event').prop('disabled', false);
 
             }
@@ -976,12 +1229,39 @@
             },
 
             success: function(res) {
+                $('#head').html('CM on Month');
+                $('#showTable').html(res);
+                $('#service').prop('disabled', false);
+                $('#pms').prop('disabled', false);
+                $('#cm').prop('disabled', true);
+                $('#event').prop('disabled', false);
+
+            }
+
+        })
+
+    }
+
+    function tblCalendar4(month, year) {
+
+        $.ajax({
+
+            url: '<?= base_url(); ?>calendar/tblCalendar4',
+
+            method: 'POST',
+
+            data: {
+                month: month,
+                year: year
+            },
+
+            success: function(res) {
                 $('#head').html('Event on Month');
                 $('#showTable').html(res);
                 $('#service').prop('disabled', false);
                 $('#pms').prop('disabled', false);
+                $('#cm').prop('disabled', false);
                 $('#event').prop('disabled', true);
-
             }
 
         })
@@ -1314,7 +1594,11 @@
         tblCalendar2(month, year);
     });
 
-    $(document).on('click', '#event', function() {
+    $(document).on('click', '#cm', function() {
         tblCalendar3(month, year);
+    });
+
+    $(document).on('click', '#event', function() {
+        tblCalendar4(month, year);
     });
 </script>

@@ -30,38 +30,9 @@
 
                 <td class="text-center"><span class="badge badge-dark"><?= $item->service_invoice; ?></span></td>
 
-                <td>
-                    <?php $i = 1;
-                    foreach ($service_project as $project) : ?>
-                        <?php if ($project->service_invoice == $item->service_invoice) : ?>
-                            <?php if ($i > 1) : ?>
-                                /
-                            <?php
-                            endif; ?>
+                <td><?= $item->project ?></td>
 
-                            <?= $project->projects ?>
-
-                        <?php $i++;
-                        endif; ?>
-
-                    <?php endforeach; ?>
-                </td>
-
-                <td><?php $i = 1;
-                    foreach ($service_vessel as $vessel) : ?>
-
-                        <?php if ($item->service_invoice == $vessel->service_invoice) : ?>
-                            <?php if ($i > 1) : ?>
-                                /
-                            <?php
-                            endif; ?>
-
-                            <?= $vessel->ves_name;  ?>
-
-                        <?php $i++;
-                        endif; ?>
-
-                    <?php endforeach; ?></td>
+                <td><?= $item->ves_name ?></td>
 
                 <td><?= $item->cus_name; ?></td>
 

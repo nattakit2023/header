@@ -30,7 +30,7 @@
 
                 <td class="text-center">
 
-                    <button onclick="edit('<?= $item->id; ?>')" id="<?= $item->id; ?>" type="button" class="btn btn-success btn-sm rounded-0" data-toggle="modal" data-target="#modalEditPort"><i class="fas fa-edit"></i></button>
+                    <button onclick="edit('<?= $item->id; ?>')" id="editport" type="button" class="btn btn-success btn-sm rounded-0"><i class="fas fa-edit"></i></button>
 
                     <button onclick="del('<?= $item->id; ?>')" type="button" class="btn btn-danger btn-sm rounded-0"><i class="fas fa-trash"></i></button>
 

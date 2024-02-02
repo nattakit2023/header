@@ -38,7 +38,7 @@
 
                 <div class="col-md-12 mb-2">
 
-                    <button type="button" onclick="clearForm()" class="btn btn-primary rounded-0" data-toggle="modal" data-target="#modalAddPort"><i class="fas fa-user-plus"></i> Port</button>
+                    <button type="button" class="btn btn-primary rounded-0" id="addport"><i class="fas fa-user-plus"></i> Port</button>
 
                 </div>
 
@@ -88,7 +88,7 @@
 
                 <h5 class="modal-title">ข้อมูลท่าเรือ</h5>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalAddPort')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -174,7 +174,7 @@
 
                 <h5 class="modal-title">แก้ไขข้อมูล</h5>
 
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="hide('modalEditPort')">
 
                     <span aria-hidden="true">&times;</span>
 
@@ -268,12 +268,6 @@
 
     }
 
-    $(document).ready(function() {
-
-        tblPort();
-
-    });
-
     function clearFormPort() {
 
         $('#port_names').val('');
@@ -282,6 +276,29 @@
 
     }
 
+    function hide(modal) {
+        $('#' + modal).modal('hide');
+    }
+    
+    $(document).ready(function() {
+
+        tblPort();
+
+    });
+
+
+    //  Show Modal Edit Port 
+
+    $(document).on('click', '#editport', function() {
+        $('#modalEditPort').modal('show');
+    });
+
+
+    //  Show Modal Add Port 
+
+    $(document).on('click', '#addport', function() {
+        $('#modalAddPort').modal('show');
+    });
 
 
     // Edit Contact
@@ -382,8 +399,6 @@
 
                                     });
 
-                                    tblPort();
-
                                     $('#edit_con_email').val('');
 
                                     $('#edit_con_tel').val('');
@@ -391,6 +406,8 @@
                                     $('#edit_con_name').val('');
 
                                     $('#modalEditPort').modal('hide');
+
+                                    tblPort();
 
                                 } else {
 
